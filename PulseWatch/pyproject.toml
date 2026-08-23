@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pulsewatch"
+version = "0.1.0"
+description = "Real-time anomaly detection platform"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "pydantic-settings",
+    "sqlalchemy",
+    "alembic",
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "scipy",
+    "python-dotenv",
+    "aioredis",
+    "redis",
+    "httpx",
+    "pytz",
+    "python-dateutil",
+    "loguru",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==23.12.1",
+    "ruff==0.1.8",
+    "mypy==1.7.1",
+    "pytest-xdist==3.5.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
