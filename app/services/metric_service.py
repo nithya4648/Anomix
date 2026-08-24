@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
 from datetime import datetime, timedelta
-from typing import Optional, 
+from typing import Optional 
 from app.models.metric import Metric
 from app.models.anomaly import Anomaly
 from app.models.alert import Alert

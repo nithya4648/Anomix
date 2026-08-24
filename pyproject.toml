@@ -29,6 +29,7 @@ dependencies = [
     "pytest-asyncio",
     "pytest-cov",
     "psycopg2-binary",
+    "requests",
 ]
 
 [project.optional-dependencies]
