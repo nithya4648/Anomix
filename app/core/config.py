@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     api_key: str
 
     # CORS
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"], ["https://anomix-omega.vercel.app/"]
     cors_allow_credentials: bool = True
     cors_allow_methods: list[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     cors_allow_headers: list[str] = ["Content-Type", "Authorization", "X-API-Key"]
