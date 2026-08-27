@@ -1,15 +1,19 @@
+version: '3.9'
+
 services:
   db:
     image: postgres:15-alpine
     container_name: pulsewatch-db
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-pulsewatch}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pulsewatch_dev}
-      POSTGRES_DB: ${POSTGRES_DB:-pulsewatch}
+      POSTGRES_USER: pulsewatch
+      POSTGRES_PASSWORD: pulsewatch_dev
+      POSTGRES_DB: pulsewatch
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pulsewatch}"]
+      test: ["CMD-SHELL", "pg_isready -U pulsewatch"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -19,6 +23,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: pulsewatch-redis
+    ports:
+      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -33,16 +39,16 @@ services:
       dockerfile: Dockerfile.backend
     container_name: pulsewatch-api
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-pulsewatch}:${POSTGRES_PASSWORD:-pulsewatch_dev}@db:5432/${POSTGRES_DB:-pulsewatch}
+      DATABASE_URL: postgresql://pulsewatch:pulsewatch_dev@db:5432/pulsewatch
       DATABASE_POOL_SIZE: 20
       DATABASE_MAX_OVERFLOW: 10
       API_HOST: 0.0.0.0
       API_PORT: 8000
       API_WORKERS: 4
       DEBUG: "True"
-      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-prod-min-32-chars}
-      API_KEY: ${API_KEY:-pulsewatch_dev_key_change_in_prod}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://frontend:80,http://localhost}
+      SECRET_KEY: your-super-secret-key-change-in-prod-min-32-chars
+      API_KEY: pulsewatch_dev_key_change_in_prod
+      CORS_ORIGINS: http://localhost:5173,http://frontend:80
       ANOMALY_DETECTION_METHOD: isolation_forest
       Z_SCORE_THRESHOLD: 3.0
       ISOLATION_FOREST_CONTAMINATION: 0.1
@@ -77,8 +83,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-      args:
-        VITE_API_URL: http://localhost:8000
     container_name: pulsewatch-frontend
     ports:
       - "80:80"
