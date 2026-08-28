@@ -1,3 +1,4 @@
+```python
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
@@ -20,13 +21,28 @@ class Settings(BaseSettings):
     api_key: str
 
     # CORS
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"], ["https://anomix-omega.vercel.app/"]
+    cors_origins: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:80",
+        "https://anomix-omega.vercel.app",
+    ]
     cors_allow_credentials: bool = True
-    cors_allow_methods: list[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    cors_allow_headers: list[str] = ["Content-Type", "Authorization", "X-API-Key"]
+    cors_allow_methods: list[str] = [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+    ]
+    cors_allow_headers: list[str] = [
+        "Content-Type",
+        "Authorization",
+        "X-API-Key",
+    ]
 
-    # ML
-    anomaly_detection_method: str = "isolation_forest"  # or z_score
+    # ML / Anomaly Detection
+    anomaly_detection_method: str = "isolation_forest"
     z_score_threshold: float = 3.0
     isolation_forest_contamination: float = 0.1
     min_samples_for_detection: int = 50
@@ -53,3 +69,4 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
+```
