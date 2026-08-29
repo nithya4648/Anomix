@@ -24,9 +24,12 @@ class Settings(BaseSettings):
 
     # CORS
     cors_origins: list[str] = [
+        "http://localhost",
+        "http://localhost:80",
         "http://localhost:5173",
         "http://localhost:3000",
-        "http://localhost:80",
+        "http://127.0.0.1",
+        "http://127.0.0.1:80",
         "https://anomix-omega.vercel.app",
     ]
     cors_allow_credentials: bool = True
@@ -36,11 +39,14 @@ class Settings(BaseSettings):
         "PUT",
         "DELETE",
         "OPTIONS",
+        "PATCH",
     ]
     cors_allow_headers: list[str] = [
         "Content-Type",
         "Authorization",
         "X-API-Key",
+        "Accept",
+        "Origin",
     ]
 
     # ML / Anomaly Detection
