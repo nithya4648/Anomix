@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
 
 const API_KEY = import.meta.env.VITE_API_KEY || 'pulsewatch_dev_key_change_in_prod'
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 const client: AxiosInstance = axios.create({
   baseURL: API_BASE,
@@ -82,53 +82,53 @@ export interface EvaluationMetric {
 
 export const metricAPI = {
   getRecent: (metric_name: string, limit: number = 100) =>
-    client.get<Metric[]>(`/api/v1/metrics/recent`, {
+    client.get<Metric[]>(`/v1/metrics/recent`, {
       params: { metric_name, limit },
     }),
 
   getRange: (metric_name: string, start_time: string, end_time: string) =>
-    client.get<Metric[]>(`/api/v1/metrics/range`, {
+    client.get<Metric[]>(`/v1/metrics/range`, {
       params: { metric_name, start_time, end_time },
     }),
 }
 
 export const anomalyAPI = {
   getAnomalies: (metric_name: string, limit: number = 100) =>
-    client.get<Anomaly[]>(`/api/v1/anomalies`, {
+    client.get<Anomaly[]>(`/v1/anomalies`, {
       params: { metric_name, limit },
     }),
 
   getRecent: (limit: number = 50) =>
-    client.get<Anomaly[]>(`/api/v1/anomalies/recent`, {
+    client.get<Anomaly[]>(`/v1/anomalies/recent`, {
       params: { limit },
     }),
 }
 
 export const incidentAPI = {
   getIncidents: (status?: string, limit: number = 100) =>
-    client.get<Incident[]>(`/api/v1/incidents`, {
+    client.get<Incident[]>(`/v1/incidents`, {
       params: { status, limit },
     }),
 
   resolve: (incident_id: string, root_cause?: string) =>
-    client.post<Incident>(`/api/v1/incidents/${incident_id}/resolve`, {
+    client.post<Incident>(`/v1/incidents/${incident_id}/resolve`, {
       root_cause,
     }),
 }
 
 export const mlAPI = {
   evaluate: (metric_name: string, period_hours: number = 24) =>
-    client.post<EvaluationMetric>(`/api/v1/ml/evaluation/${metric_name}`, {
+    client.post<EvaluationMetric>(`/v1/ml/evaluation/${metric_name}`, {
       period_hours,
     }),
 
   getEvaluationHistory: (metric_name: string, limit: number = 10) =>
-    client.get<EvaluationMetric[]>(`/api/v1/ml/evaluation/${metric_name}`, {
+    client.get<EvaluationMetric[]>(`/v1/ml/evaluation/${metric_name}`, {
       params: { limit },
     }),
 
   getLatestEvaluation: (metric_name: string) =>
-    client.get<EvaluationMetric | null>(`/api/v1/ml/evaluation/${metric_name}/latest`),
+    client.get<EvaluationMetric | null>(`/v1/ml/evaluation/${metric_name}/latest`),
 }
 
 export default client
