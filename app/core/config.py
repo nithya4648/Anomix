@@ -1,9 +1,11 @@
-```python
-from pydantic_settings import BaseSettings
+# pyrefly: ignore [missing-import]
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
+
     # Database
     database_url: str
     database_pool_size: int = 20
@@ -61,12 +63,8 @@ class Settings(BaseSettings):
     ws_heartbeat_interval: int = 30
     ws_max_connections: int = 1000
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
 
 
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
-```
