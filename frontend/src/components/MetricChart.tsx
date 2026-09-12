@@ -39,7 +39,7 @@ export const MetricChart = ({
           />
           <YAxis />
           <Tooltip
-            formatter={(value) => value.toFixed(2)}
+            formatter={(value: any) => typeof value === 'number' ? value.toFixed(2) : value}
             labelFormatter={(label) => `Time: ${label}`}
           />
           <Legend />

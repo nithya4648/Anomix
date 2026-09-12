@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Optional
 from app.core.database import get_db
+from app.models import Metric
 from app.utils.security import verify_api_key
 from app.schemas import MetricCreate, MetricResponse, MetricsRangeQuery
 from app.services.metric_service import MetricService, AnomalyService

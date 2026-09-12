@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import status
+from fastapi import APIRouter, Depends, HTTPException, status as http_status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Optional
@@ -59,7 +60,7 @@ async def get_anomalies(
     except Exception as e:
         logger.error(f"Error getting anomalies: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch anomalies",
         )
 
@@ -96,7 +97,7 @@ async def get_recent_anomalies(
     except Exception as e:
         logger.error(f"Error getting recent anomalies: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch anomalies",
         )
 
@@ -134,7 +135,7 @@ async def get_incidents(
     except Exception as e:
         logger.error(f"Error getting incidents: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch incidents",
         )
 
