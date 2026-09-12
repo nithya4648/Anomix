@@ -1,11 +1,15 @@
+import os
 import time
 import httpx
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
     import psutil
 except ImportError:
     psutil = None
+
+API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_KEY = os.getenv("API_KEY", "pulsewatch_dev_key_change_in_prod")
 
 def collect_system_metrics():
     """Collect real system metrics (CPU, Memory, Disk) via psutil (with fallback)"""
@@ -28,7 +32,7 @@ def post_metric(client: httpx.Client, metric_name: str, value: float):
     payload = {
         "metric_name": metric_name,
         "value": value,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "labels": {"source": "psutil_system_bridge", "host": "local_machine"},
     }
     try:
