@@ -75,9 +75,50 @@ class AnomalyDetector:
             return self._detect_isolation_forest(metric_name, current_value, historical_values)
         elif self.method == "z_score":
             return self._detect_z_score(current_value, historical_values)
+        elif self.method == "lstm_autoencoder":
+            return self._detect_lstm(metric_name, current_value, historical_values)
         else:
             return self._detect_hybrid(
                 metric_name, current_value, historical_values, historical_values
+            )
+
+    def _detect_lstm(
+        self,
+        metric_name: str,
+        current_value: float,
+        historical_values: list[float],
+    ) -> AnomalyResult:
+        """LSTM Autoencoder sequence anomaly detection"""
+        from app.ml.lstm_autoencoder import PyTorchLSTMAutoencoder
+
+        try:
+            if metric_name not in self.models:
+                lstm_model = PyTorchLSTMAutoencoder(sequence_length=10)
+                # Calibrate baseline
+                window = historical_values[-50:]
+                seqs = [np.array(window[i:i+10]) for i in range(len(window)-10)]
+                if seqs:
+                    lstm_model.fit(seqs)
+                self.models[metric_name] = lstm_model
+            else:
+                lstm_model = self.models[metric_name]
+
+            full_seq = historical_values + [current_value]
+            is_anomaly, confidence, mse = lstm_model.detect_sequence_anomaly(full_seq)
+
+            return AnomalyResult(
+                is_anomaly=is_anomaly,
+                confidence_score=confidence,
+                detection_method="lstm_autoencoder",
+                expected_value=float(np.mean(historical_values[-10:])) if historical_values else None,
+            )
+
+        except Exception as e:
+            logger.error(f"Error in LSTM detection for {metric_name}: {e}")
+            return AnomalyResult(
+                is_anomaly=False,
+                confidence_score=0.0,
+                detection_method="lstm_autoencoder",
             )
 
     def _detect_isolation_forest(
