@@ -105,6 +105,8 @@ class AnomalyService:
             min_samples=settings.min_samples_for_detection,
         )
         self.root_cause_analyzer = RootCauseAnalyzer()
+        from app.services.alert_dampener import AlertDampener
+        self.dampener = AlertDampener()
 
     def detect_and_create_alert(
         self,
@@ -133,6 +135,19 @@ class AnomalyService:
         if not detection_result.is_anomaly:
             return None, None, None
 
+        # Determine severity based on confidence
+        if detection_result.confidence_score > 0.8:
+            severity = "critical"
+        elif detection_result.confidence_score > 0.6:
+            severity = "warning"
+        else:
+            severity = "info"
+
+        # Apply alert fatigue dampening
+        if self.dampener.should_suppress(metric.metric_name, severity, metric.timestamp):
+            logger.info(f"Alert suppressed due to fatigue dampening for {metric.metric_name} ({severity})")
+            return None, None, None
+
         # Create anomaly record
         anomaly = Anomaly(
             metric_name=metric.metric_name,
@@ -146,14 +161,6 @@ class AnomalyService:
         )
         self.db.add(anomaly)
         self.db.flush()
-
-        # Determine severity based on confidence
-        if detection_result.confidence_score > 0.8:
-            severity = "critical"
-        elif detection_result.confidence_score > 0.6:
-            severity = "warning"
-        else:
-            severity = "info"
 
         # Create alert
         alert = Alert(
