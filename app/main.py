@@ -13,15 +13,29 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
+    import asyncio
+    from app.services.stream_consumer import start_stream_consumer
+
     # Startup
     logger.info("PulseWatch API starting...")
     init_db()
     logger.info("Database initialized")
 
+    consumer_task = None
+    if settings.use_redis:
+        consumer_task = asyncio.create_task(start_stream_consumer())
+        logger.info("Started Redis Streams background consumer task.")
+
     yield
 
     # Shutdown
     logger.info("PulseWatch API shutting down...")
+    if consumer_task:
+        consumer_task.cancel()
+        try:
+            await consumer_task
+        except asyncio.CancelledError:
+            pass
 
 
 def create_app() -> FastAPI:

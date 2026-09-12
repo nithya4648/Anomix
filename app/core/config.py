@@ -66,8 +66,8 @@ class Settings(BaseSettings):
     anomaly_aggregation_window_minutes: int = 5
 
     # Redis
-    redis_url: str = "redis://redis:6379/0"
-    use_redis: bool = False
+    redis_url: str = "redis://localhost:6379/0"
+    use_redis: bool = True
 
     # WebSocket
     ws_heartbeat_interval: int = 30

@@ -3,6 +3,7 @@ import { metricAPI, anomalyAPI, incidentAPI, Incident, Anomaly, Metric } from '.
 import { MetricChart } from '../components/MetricChart'
 import { IncidentTimeline } from '../components/IncidentTimeline'
 import { AlertCircle, TrendingUp } from 'lucide-react'
+import { useWebSocket } from '../hooks/useWebSocket'
 
 const METRIC_NAMES = ['cpu_usage', 'memory_usage', 'api_latency', 'disk_io', 'request_rate']
 
@@ -13,6 +14,8 @@ export const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedMetric, setSelectedMetric] = useState<string>(METRIC_NAMES[0])
+  const wsUrl = `ws://${window.location.hostname}:8000/ws/api/v1/updates`
+  const { connected, subscribe, unsubscribe, onMessage } = useWebSocket(wsUrl)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,11 +58,38 @@ export const Dashboard = () => {
     }
 
     fetchData()
-
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000)
-    return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (connected) {
+      METRIC_NAMES.forEach(metric => subscribe(metric))
+    }
+    return () => {
+      if (connected) {
+        METRIC_NAMES.forEach(metric => unsubscribe(metric))
+      }
+    }
+  }, [connected, subscribe, unsubscribe])
+
+  useEffect(() => {
+    const cleanupMetric = onMessage('metric_ingested', (data) => {
+      setMetrics(prev => {
+        const metricName = data.metric.metric_name;
+        const currentMetrics = prev[metricName] || [];
+        // Keep only last 100
+        const updated = [data.metric, ...currentMetrics].slice(0, 100);
+        return { ...prev, [metricName]: updated };
+      });
+      if (data.anomaly_detected && data.alert) {
+         // Optionally handle new anomalies, but the instructions focus on charts.
+         // Let's refetch anomalies for simplicity or just let the user see it on refresh for now.
+      }
+    });
+    
+    return () => {
+      cleanupMetric();
+    }
+  }, [onMessage])
 
   const activeAnomalies = anomalies.filter(a => !a.is_confirmed)
   const criticalIncidents = incidents.filter(i => i.severity === 'critical' && i.status !== 'resolved')

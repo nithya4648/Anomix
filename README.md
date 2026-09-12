@@ -578,6 +578,12 @@ MIT License - See LICENSE file for details
 - Scales well with high dimensions
 - Fast training and inference
 
+### Why Redis Streams over Kafka / Flink?
+
+- **Operational Simplicity**: Redis Streams provides lightweight, message-broker streaming primitives (`XADD`, `XREADGROUP`, `XACK`) directly within the existing Redis container without requiring Zookeeper/KRaft clusters or complex JVM infrastructure overhead.
+- **Microsecond Latency**: Built on top of in-memory datastructures, Redis Streams allows near-instantaneous async buffering and consumption for metric streams.
+- **Consumer Group Support**: Supports stateful fan-out and consumer group offset management, satisfying all requirements for decoupled anomaly detection processing.
+
 ### Why WebSocket?
 
 - Real-time updates without polling

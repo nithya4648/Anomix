@@ -26,13 +26,41 @@ async def ingest_metric(
     Ingest a new metric and run anomaly detection.
     
     This endpoint:
-    1. Stores the metric
+    1. Stores the metric (or pushes to Redis stream if enabled)
     2. Runs real-time anomaly detection
     3. Creates alerts/incidents if anomalies detected
     4. Broadcasts updates via WebSocket
     """
+    from app.core.config import get_settings
+    import json
+    import redis.asyncio as aioredis
+    settings = get_settings()
 
     try:
+        if settings.use_redis:
+            # Asynchronous ingestion pipeline via Redis Stream
+            redis_client = aioredis.from_url(settings.redis_url, decode_responses=True)
+            try:
+                msg_payload = {
+                    "metric_name": metric.metric_name,
+                    "value": str(metric.value),
+                    "timestamp": metric.timestamp.isoformat() if metric.timestamp else datetime.utcnow().isoformat(),
+                    "labels": json.dumps(metric.labels or {}),
+                }
+                await redis_client.xadd("metrics:ingest", msg_payload)
+            finally:
+                await redis_client.close()
+
+            # Return preliminary accepted response
+            return MetricResponse(
+                id=0,
+                metric_name=metric.metric_name,
+                value=metric.value,
+                timestamp=metric.timestamp or datetime.utcnow(),
+                labels=metric.labels or {},
+                created_at=datetime.utcnow(),
+            )
+
         metric_service = MetricService(db)
         anomaly_service = AnomalyService(db)
 
