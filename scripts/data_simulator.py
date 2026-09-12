@@ -174,6 +174,46 @@ class MetricSimulator:
             "request_rate": self.generate_request_rate(num_points),
         }
 
+    def generate_synthetic_outliers(
+        self,
+        base_series: List[float],
+        outlier_type: str = "spike",
+        anomaly_ratio: float = 0.05,
+    ) -> List[Tuple[float, bool]]:
+        """
+        Inject synthetic outliers:
+        - 'spike': Global point anomaly
+        - 'level_shift': Step increase in metric baseline
+        - 'contextual': Low amplitude noise breaking temporal seasonality
+        """
+        n = len(base_series)
+        series = list(base_series)
+        anomalies = [False] * n
+        num_anomalies = int(n * anomaly_ratio)
+
+        if outlier_type == "spike":
+            indices = np.random.choice(n, size=num_anomalies, replace=False)
+            std = np.std(series) if np.std(series) > 0 else 1.0
+            for idx in indices:
+                series[idx] += 5 * std
+                anomalies[idx] = True
+
+        elif outlier_type == "level_shift":
+            shift_start = n // 2
+            std = np.std(series) if np.std(series) > 0 else 1.0
+            for i in range(shift_start, min(shift_start + num_anomalies, n)):
+                series[i] += 4 * std
+                anomalies[i] = True
+
+        elif outlier_type == "contextual":
+            # Noise during quiet periods (breaking context)
+            indices = np.random.choice(n, size=num_anomalies, replace=False)
+            for idx in indices:
+                series[idx] += np.random.normal(0, np.std(series) * 2)
+                anomalies[idx] = True
+
+        return list(zip(series, anomalies))
+
 
 def simulate_metrics_stream(duration_hours: int = 24, interval_seconds: int = 60):
     """
