@@ -14,7 +14,7 @@ export const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedMetric, setSelectedMetric] = useState<string>(METRIC_NAMES[0])
-  const wsUrl = `ws://${window.location.hostname}:8000/ws/api/v1/updates`
+  const wsUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000/ws/api/v1/updates`
   const { connected, subscribe, unsubscribe, onMessage } = useWebSocket(wsUrl)
 
   useEffect(() => {
