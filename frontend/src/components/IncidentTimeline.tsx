@@ -8,13 +8,13 @@ interface IncidentTimelineProps {
 const getSeverityColor = (severity: string) => {
   switch (severity) {
     case 'critical':
-      return 'bg-red-100 border-red-500'
+      return 'bg-red-950 border-red-600'
     case 'warning':
-      return 'bg-yellow-100 border-yellow-500'
+      return 'bg-amber-950 border-amber-600'
     case 'info':
-      return 'bg-blue-100 border-blue-500'
+      return 'bg-blue-950 border-blue-600'
     default:
-      return 'bg-gray-100 border-gray-500'
+      return 'bg-slate-800 border-slate-600'
   }
 }
 
@@ -45,37 +45,37 @@ const getStatusIcon = (status: string) => {
 export const IncidentTimeline = ({ incidents }: IncidentTimelineProps) => {
   if (incidents.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+      <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 text-center text-slate-400">
         No incidents detected. System operating normally.
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold mb-6">Incident Timeline</h3>
+    <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
+      <h3 className="text-lg font-bold text-white mb-6">Incident Timeline</h3>
 
       <div className="space-y-4">
         {incidents.map((incident) => (
           <div
             key={incident.id}
-            className={`border-l-4 p-4 rounded ${getSeverityColor(incident.severity)}`}
+            className={`border-l-4 p-4 rounded-lg ${getSeverityColor(incident.severity)}`}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   {getStatusIcon(incident.status)}
-                  <h4 className="font-semibold text-lg">{incident.title}</h4>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${getSeverityBadgeColor(incident.severity)}`}>
+                  <h4 className="font-semibold text-lg text-white">{incident.title}</h4>
+                  <span className={`px-2 py-1 rounded-md text-xs font-medium ${getSeverityBadgeColor(incident.severity)}`}>
                     {incident.severity.toUpperCase()}
                   </span>
                 </div>
 
                 {incident.description && (
-                  <p className="text-sm text-gray-700 mb-2">{incident.description}</p>
+                  <p className="text-sm text-slate-200 mb-2">{incident.description}</p>
                 )}
 
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-slate-400">
                   <p>Detected: {new Date(incident.detected_at).toLocaleString()}</p>
                   {incident.resolved_at && (
                     <p>Resolved: {new Date(incident.resolved_at).toLocaleString()}</p>
@@ -83,21 +83,21 @@ export const IncidentTimeline = ({ incidents }: IncidentTimelineProps) => {
                 </div>
 
                 {incident.root_cause && (
-                  <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
-                    <p className="font-semibold text-gray-700">Root Cause:</p>
-                    <p className="text-gray-600">{incident.root_cause}</p>
+                  <div className="mt-3 p-3 bg-slate-800 rounded-lg text-sm border border-slate-700">
+                    <p className="font-semibold text-slate-200">Root Cause:</p>
+                    <p className="text-slate-300">{incident.root_cause}</p>
                   </div>
                 )}
 
                 {incident.correlated_metrics && (
                   <div className="mt-2 text-sm">
-                    <p className="font-semibold text-gray-700">Affected Metrics:</p>
-                    <p className="text-gray-600">{incident.correlated_metrics}</p>
+                    <p className="font-semibold text-slate-200">Affected Metrics:</p>
+                    <p className="text-slate-300">{incident.correlated_metrics}</p>
                   </div>
                 )}
               </div>
 
-              <span className="text-xs font-medium text-gray-500 px-2 py-1 bg-gray-100 rounded">
+              <span className="text-xs font-medium text-slate-300 px-2 py-1 bg-slate-800 border border-slate-700 rounded-md">
                 {incident.status}
               </span>
             </div>
@@ -107,3 +107,4 @@ export const IncidentTimeline = ({ incidents }: IncidentTimelineProps) => {
     </div>
   )
 }
+
