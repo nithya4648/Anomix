@@ -76,7 +76,7 @@ class TestRootCauseAnalyzer:
         
         metric_values = {
             "metric1": [1, 2, 3, 4, 5],
-            "metric2": [10, 20, 30, 40, 50],
+            "metric2": [5, 1, 4, 2, 3],
         }
         
         correlated, confidence = analyzer.analyze("metric1", metric_values)

@@ -150,12 +150,12 @@ class AnomalyDetector:
             prediction = model.predict([[current_value]])[0]
 
             # Normalize score to 0-1 confidence
-            confidence = max(0.0, min(1.0, -score / 3))
+            confidence = max(0.0, min(1.0, float(-score)))
 
             is_anomaly = prediction == -1 and confidence > 0.5
 
             return AnomalyResult(
-                is_anomaly=is_anomaly,
+                is_anomaly=bool(is_anomaly),
                 confidence_score=confidence,
                 detection_method="isolation_forest",
             )
@@ -266,8 +266,9 @@ class RootCauseAnalyzer:
                 if metric_name == primary_metric or len(values) != len(primary_series):
                     continue
 
-                correlation = abs(np.corrcoef(primary_series, values)[0, 1])
-                if correlation > self.correlation_threshold:
+                corr_matrix = np.corrcoef(primary_series, values)
+                correlation = abs(corr_matrix[0, 1])
+                if not np.isnan(correlation) and correlation > self.correlation_threshold:
                     correlations[metric_name] = correlation
 
             correlated = sorted(correlations.items(), key=lambda x: x[1], reverse=True)

@@ -30,6 +30,7 @@ dependencies = [
     "pytest-cov",
     "psycopg2-binary",
     "requests",
+    "psutil>=5.9.6",
 ]
 
 [project.optional-dependencies]

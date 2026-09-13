@@ -1,0 +1,37 @@
+===============================================================================
+               ANOMIX PLATFORM IMPROVEMENTS & ARCHITECTURE SUMMARY
+===============================================================================
+
+1. DASHBOARD UI REDESIGN & MODERNIZATION
+-------------------------------------------------------------------------------
+* Before: Basic monochrome gray layout, static tables, lacking real-time status.
+* After: High-impact dark-theme UI with glassmorphic backdrop filters, custom 
+  gradient status cards (Indigo, Violet, Amber, Emerald, Rose), interactive tab 
+  selectors, dynamic trend indicators (% change), and an enhanced anomalies log.
+* Added Features:
+  - Live WebSocket Connection Indicator with pulsing green status badge.
+  - Auto-refresh toggle switch (10s polling interval) with manual sync button.
+  - Color-coded confidence score visualizer bars in the anomalies table.
+  - Error banner with user-dismiss option.
+
+2. REAL SYSTEM METRICS INTEGRATION
+-------------------------------------------------------------------------------
+* Before: Fake random data simulator (`data_simulator.py`).
+* After: Production `real_metrics_integration.py` utilizing `psutil` and `httpx`.
+* Features:
+  - Samples real OS CPU Usage %, Memory Usage %, Disk I/O %, Request Rate, and 
+    API Latency probes.
+  - Supports continuous background ingestion sending telemetry every 10 seconds.
+  - Demo mode (`python scripts/real_metrics_integration.py demo`) for instant single-pass testing without backend dependency.
+
+3. BACKWARD COMPATIBILITY & REFACTORING
+-------------------------------------------------------------------------------
+* Preserved existing API structure (`metricAPI`, `anomalyAPI`, `incidentAPI`).
+* Maintained database schemas, WebSocket event handlers, and ML model contracts.
+* Added dependencies (`psutil>=5.9.6`) cleanly into `pyproject.toml`.
+
+4. KEY INTERVIEW & DEMO TALKING POINTS
+-------------------------------------------------------------------------------
+- "I replaced synthetic metrics with a real OS kernel telemetry collector using psutil."
+- "Redesigned the frontend into a responsive dark-themed dashboard with live WebSocket status monitoring and real-time trend feedback."
+- "Ensured production readiness with containerized Docker Compose setups and step-by-step Railway cloud deployment guides."
