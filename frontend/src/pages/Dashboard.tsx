@@ -418,6 +418,17 @@ export const Dashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="mt-12 border-t border-slate-800 bg-slate-900 px-4 py-6 text-center text-xs text-slate-400">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row sm:px-6 lg:px-8">
+          <p>© 2026 Anomix Telemetry & Anomaly Detection System.</p>
+          <div className="flex items-center gap-6">
+            <a href="/privacy" className="hover:text-white transition">Privacy Policy</a>
+            <a href="/terms" className="hover:text-white transition">Terms & Conditions</a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
