@@ -52,6 +52,9 @@ async def get_anomalies(
                 z_score=a.z_score,
                 expected_value=a.expected_value,
                 is_confirmed=a.is_confirmed,
+                severity=a.severity,
+                reasons=a.reasons,
+                ensemble_scores=a.ensemble_scores,
                 created_at=a.created_at,
             )
             for a in anomalies
@@ -89,6 +92,9 @@ async def get_recent_anomalies(
                 z_score=a.z_score,
                 expected_value=a.expected_value,
                 is_confirmed=a.is_confirmed,
+                severity=a.severity,
+                reasons=a.reasons,
+                ensemble_scores=a.ensemble_scores,
                 created_at=a.created_at,
             )
             for a in anomalies
@@ -127,6 +133,8 @@ async def get_incidents(
                 root_cause=i.root_cause,
                 correlated_metrics=i.correlated_metrics,
                 confidence=i.confidence,
+                progress_stage=i.progress_stage,
+                progress_percent=i.progress_percent,
                 created_at=i.created_at,
             )
             for i in incidents
@@ -167,6 +175,8 @@ async def resolve_incident(
             root_cause=incident.root_cause,
             correlated_metrics=incident.correlated_metrics,
             confidence=incident.confidence,
+            progress_stage=incident.progress_stage,
+            progress_percent=incident.progress_percent,
             created_at=incident.created_at,
         )
 
