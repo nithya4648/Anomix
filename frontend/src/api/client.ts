@@ -11,6 +11,30 @@ const client: AxiosInstance = axios.create({
   },
 })
 
+export interface RuleConfig {
+  id?: string
+  metric_name: string
+  threshold_value: number
+  duration_minutes: number
+  severity: string
+  enabled: boolean
+  recovery_confirmation_minutes?: number | null
+}
+
+export interface AnalyticsHealth {
+  critical: number
+  warning: number
+  info: number
+}
+
+export interface AnalyticsSummary {
+  anomalies: number
+  incidents: number
+  resolved_incidents: number
+  active_alerts: number
+  resolved_alerts: number
+}
+
 export interface Metric {
   id: string
   metric_name: string
@@ -120,16 +144,59 @@ export const anomalyAPI = {
     }),
 }
 
+export const alertAPI = {
+  getAlerts: (status_filter?: string, severity?: string, limit: number = 100) =>
+    client.get<Alert[]>(`/v1/alerts`, {
+      params: { status_filter, severity, limit },
+    }),
+
+  acknowledge: (alert_id: string, acknowledged_by: string = 'system') =>
+    client.post<Alert>(`/v1/alerts/${alert_id}/acknowledge`, null, {
+      params: { acknowledged_by },
+    }),
+
+  resolve: (alert_id: string) =>
+    client.post<Alert>(`/v1/alerts/${alert_id}/resolve`),
+}
+
 export const incidentAPI = {
   getIncidents: (status?: string, limit: number = 100) =>
     client.get<Incident[]>(`/v1/incidents`, {
       params: { status, limit },
     }),
 
+  getIncident: (incident_id: string) =>
+    client.get<Incident>(`/v1/incidents/${incident_id}`),
+
   resolve: (incident_id: string, root_cause?: string) =>
     client.post<Incident>(`/v1/incidents/${incident_id}/resolve`, {
       root_cause,
     }),
+}
+
+export const ruleAPI = {
+  getRules: () =>
+    client.get<RuleConfig[]>(`/config/rules/`),
+
+  createRule: (rule: RuleConfig) =>
+    client.post<RuleConfig>(`/config/rules/`, rule),
+
+  updateRule: (rule_id: string, rule: Partial<RuleConfig>) =>
+    client.put<RuleConfig>(`/config/rules/${rule_id}`, rule),
+
+  deleteRule: (rule_id: string) =>
+    client.delete<{ detail: string }>(`/config/rules/${rule_id}`),
+}
+
+export const analyticsAPI = {
+  getHealth: () =>
+    client.get<AnalyticsHealth>(`/analytics/health`),
+
+  getSummary: () =>
+    client.get<AnalyticsSummary>(`/analytics/summary`),
+
+  getMethods: () =>
+    client.get<Record<string, number>>(`/analytics/methods`),
 }
 
 export const mlAPI = {

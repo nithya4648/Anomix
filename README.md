@@ -75,6 +75,17 @@ A production-ready, full-stack anomaly detection platform built with FastAPI, Po
 - CORS configured
 - Type safety (Pydantic, TypeScript)
 
+## UI Structure
+
+The frontend is organized around investigation workflows:
+
+- `/` - Slim operational overview with summary counts and recent activity
+- `/anomalies` - Anomaly feed for reviewing detected signals
+- `/incidents` - Active and resolved incident list
+- `/incidents/:id` - Incident investigation with progress, root cause, alerts, and evidence
+- `/rules` - Alert and detection rule configuration
+- `/privacy` and `/terms` - Legal pages
+
 ## Project Structure
 
 ```
