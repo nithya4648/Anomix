@@ -607,4 +607,21 @@ MIT License - See LICENSE file for details
 
 ---
 
+## Recent Improvements
+
+### Dashboard UI Redesign
+- High-impact dark-theme UI with glassmorphic backdrop filters and custom gradient status cards
+- Live WebSocket connection indicator with pulsing status badge
+- Auto-refresh toggle (10s polling) with manual sync button
+- Color-coded confidence score visualizer bars in the anomalies table
+
+### Real System Metrics Integration
+- Production `real_metrics_integration.py` using `psutil` and `httpx` for real OS telemetry (CPU, memory, disk I/O, request rate, API latency)
+- Continuous background ingestion (every 10s) and single-pass demo mode (`python scripts/real_metrics_integration.py demo`)
+
+### Backward Compatibility
+- Preserved existing API structure, database schemas, WebSocket event handlers, and ML model contracts
+
+---
+
 **Built with ❤️ for production monitoring**

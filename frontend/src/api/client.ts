@@ -40,7 +40,9 @@ export interface Alert {
   incident_id: string | null
   severity: 'critical' | 'warning' | 'info'
   message: string
-  is_resolved: boolean
+  status: 'new' | 'acknowledged' | 'resolved'
+  acknowledged_at: string | null
+  acknowledged_by: string | null
   resolved_at: string | null
   created_at: string
 }
@@ -56,6 +58,8 @@ export interface Incident {
   root_cause: string | null
   correlated_metrics: string | null
   confidence: number | null
+  progress_stage: string | null
+  progress_percent: number | null
   created_at: string
 }
 

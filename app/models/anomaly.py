@@ -1,4 +1,4 @@
-from sqlalchemy import String, Float, DateTime, Index, Boolean
+from sqlalchemy import String, Float, DateTime, Index, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -22,6 +22,12 @@ class Anomaly(Base, UUIDMixin, TimestampMixin):
     z_score: Mapped[float] = mapped_column(Float, nullable=True)
     expected_value: Mapped[float] = mapped_column(Float, nullable=True)
     is_confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Ensemble detection fields
+    severity: Mapped[str] = mapped_column(String(50), nullable=True)  # critical, warning, info
+    reasons: Mapped[str] = mapped_column(Text, nullable=True)  # JSON-encoded list of reason strings
+    ensemble_scores: Mapped[str] = mapped_column(Text, nullable=True)  # JSON-encoded dict of per-method scores
     
     def __repr__(self) -> str:
         return f"<Anomaly {self.metric_name}={self.value} (confidence={self.confidence_score:.2f})>"
+

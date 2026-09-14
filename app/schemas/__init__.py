@@ -40,6 +40,9 @@ class AnomalyResponse(BaseModel):
     z_score: Optional[float] = None
     expected_value: Optional[float] = None
     is_confirmed: bool
+    severity: Optional[str] = None
+    reasons: Optional[str] = None
+    ensemble_scores: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -52,7 +55,9 @@ class AlertResponse(BaseModel):
     incident_id: Optional[str] = None
     severity: str
     message: str
-    is_resolved: bool
+    status: str  # new, acknowledged, resolved
+    acknowledged_at: Optional[datetime] = None
+    acknowledged_by: Optional[str] = None
     resolved_at: Optional[datetime] = None
     created_at: datetime
 
@@ -83,6 +88,8 @@ class IncidentResponse(BaseModel):
     root_cause: Optional[str]
     correlated_metrics: Optional[str]
     confidence: Optional[float]
+    progress_stage: Optional[str] = None
+    progress_percent: Optional[int] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

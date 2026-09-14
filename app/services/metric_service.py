@@ -272,7 +272,7 @@ class AnomalyService:
         # Resolve related alerts
         alerts = self.db.query(Alert).filter(Alert.incident_id == incident_id).all()
         for alert in alerts:
-            alert.is_resolved = True
+            alert.status = "resolved"
             alert.resolved_at = datetime.utcnow()
 
         self.db.commit()
