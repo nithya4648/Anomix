@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import IsolationForest
 from scipy import stats
 from typing import Optional, Tuple
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from app.core.logging import get_logger
 
@@ -17,6 +17,7 @@ class AnomalyResult:
     detection_method: str
     z_score: Optional[float] = None
     expected_value: Optional[float] = None
+    reason: list[str] = field(default_factory=list)
 
 
 class AnomalyDetector:

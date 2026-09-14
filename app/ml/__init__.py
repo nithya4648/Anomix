@@ -1,5 +1,7 @@
 from app.ml.anomaly_detector import AnomalyDetector, RootCauseAnalyzer, AnomalyResult
 from app.ml.evaluator import MetricsEvaluator, EvaluationMetrics
+from app.ml.trend_detector import TrendDetector
+from app.ml.ensemble import EnsembleDetector, EnsembleResult
 
 __all__ = [
     "AnomalyDetector",
@@ -7,4 +9,8 @@ __all__ = [
     "AnomalyResult",
     "MetricsEvaluator",
     "EvaluationMetrics",
+    "TrendDetector",
+    "EnsembleDetector",
+    "EnsembleResult",
 ]
+
