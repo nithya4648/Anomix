@@ -97,7 +97,7 @@ async def ingest_metric(
             })
         )
 
-        return MetricResponse.from_attributes(**{
+        return MetricResponse(**{
             "id": stored_metric.id,
             "metric_name": stored_metric.metric_name,
             "value": stored_metric.value,
