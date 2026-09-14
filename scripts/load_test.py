@@ -1,12 +1,13 @@
 import asyncio
+import os
 import httpx
 from datetime import datetime, timedelta
 import argparse
 import sys
 from scripts.data_simulator import MetricSimulator
 
-API_URL = "http://localhost:8000"
-API_KEY = "pulsewatch_dev_key_change_in_prod"
+API_URL = "https://anomix-backend.onrender.com"
+API_KEY = os.getenv("PULSEWATCH_API_KEY")
 
 
 async def ingest_metric(client: httpx.AsyncClient, metric_name: str, value: float, timestamp: datetime):
