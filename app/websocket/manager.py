@@ -13,6 +13,16 @@ class WebSocketManager:
         self.active_connections: Set[WebSocket] = set()
         self.metrics_subscribers: Dict[str, Set[WebSocket]] = {}
 
+    async def broadcast_progress(self, update: dict):
+        """Broadcast incident progress updates to all clients.
+
+        The ``update`` dict should contain keys like ``event``, ``incident_id``,
+        ``stage`` and ``percent``. It is wrapped in a ``type`` field so clients
+        can differentiate progress messages.
+        """
+        message = {"type": "progress_update", **update}
+        await self.broadcast(message)
+
     async def connect(self, websocket: WebSocket):
         """Accept and register a new WebSocket connection"""
         await websocket.accept()

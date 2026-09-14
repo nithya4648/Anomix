@@ -65,4 +65,6 @@ Open your browser to: **`http://localhost:5173`**
 2. **Real-time Live Telemetry**: Metrics sampled directly from your OS kernel via `psutil`.
 3. **Connection Indicator**: Green **"WebSocket Live"** badge demonstrating streaming status.
 4. **Auto-refresh Controls**: Toggle auto-refresh with manual sync buttons.
-5. **Interactive Anomaly Log**: Color-coded confidence bars and detection method indicators.
+6. **Interactive Anomaly Feedback**: Click the **Feedback** action on any anomaly row to classify (True Positive / False Alarm) and attach investigation notes.
+7. **Automated Recovery**: Incidents automatically transition to **Resolved** when metrics remain normal through the configurable `RECOVERY_CONFIRMATION_MINUTES` window.
+

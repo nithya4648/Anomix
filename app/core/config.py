@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     metrics_retention_days: int = 30
     anomaly_aggregation_window_minutes: int = 5
+    recovery_confirmation_minutes: int = 5
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
@@ -73,7 +74,14 @@ class Settings(BaseSettings):
     ws_heartbeat_interval: int = 30
     ws_max_connections: int = 1000
 
-
+    # Notifications
+    smtp_server: str | None = None
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_from_email: str | None = None
+    smtp_to_email: str | None = None
+    webhook_url: str | None = None
 
 @lru_cache()
 def get_settings() -> Settings:

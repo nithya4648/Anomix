@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
 from collections import defaultdict
-
+from sqlalchemy.orm import Session
 
 @dataclass
 class AlertRule:
@@ -84,9 +84,29 @@ class AlertRuleEngine:
 
     def __init__(
         self,
+        db: Optional[Session] = None,
         alert_rules: Optional[list[AlertRule]] = None,
         incident_rule: Optional[IncidentRule] = None,
     ):
+        """Initialize the engine.
+        If a database session is provided and no explicit alert_rules list is given,
+        the engine will load rules from the `rule_config` table.
+        """
+        if db is not None and alert_rules is None:
+            # Load RuleConfig entries from DB and convert to AlertRule objects
+            from app.models.rule_config import RuleConfig
+            configs = db.query(RuleConfig).all()
+            alert_rules = [
+                AlertRule(
+                    metric_name=c.metric_name,
+                    threshold_value=c.threshold_value,
+                    duration_minutes=c.duration_minutes,
+                    severity=c.severity,
+                    enabled=c.enabled,
+                    description="",
+                )
+                for c in configs
+            ]
         self.alert_rules = alert_rules or list(DEFAULT_ALERT_RULES)
         self.incident_rule = incident_rule or DEFAULT_INCIDENT_RULE
 

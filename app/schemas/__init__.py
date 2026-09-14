@@ -43,7 +43,16 @@ class AnomalyResponse(BaseModel):
     severity: Optional[str] = None
     reasons: Optional[str] = None
     ensemble_scores: Optional[str] = None
+    feedback_status: Optional[str] = None
+    feedback_note: Optional[str] = None
+    feedback_at: Optional[datetime] = None
     created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+class AnomalyFeedbackRequest(BaseModel):
+    feedback_status: str = Field(..., description="Feedback status: unreviewed, true_positive, false_positive")
+    feedback_note: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

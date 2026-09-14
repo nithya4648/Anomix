@@ -31,6 +31,12 @@ export interface Anomaly {
   z_score: number | null
   expected_value: number | null
   is_confirmed: boolean
+  severity?: string
+  reasons?: string
+  ensemble_scores?: string
+  feedback_status?: 'unreviewed' | 'true_positive' | 'false_positive' | string | null
+  feedback_note?: string | null
+  feedback_at?: string | null
   created_at: string
 }
 
@@ -105,6 +111,12 @@ export const anomalyAPI = {
   getRecent: (limit: number = 50) =>
     client.get<Anomaly[]>(`/v1/anomalies/recent`, {
       params: { limit },
+    }),
+
+  addFeedback: (anomalyId: string, feedback_status: string, feedback_note?: string) =>
+    client.post<Anomaly>(`/v1/anomalies/${anomalyId}/feedback`, {
+      feedback_status,
+      feedback_note,
     }),
 }
 

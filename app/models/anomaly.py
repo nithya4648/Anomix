@@ -1,6 +1,7 @@
-from sqlalchemy import String, Float, DateTime, Index, Boolean, Text
+from sqlalchemy import String, Float, DateTime, Index, Boolean, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
+from typing import Optional
 from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
@@ -27,6 +28,9 @@ class Anomaly(Base, UUIDMixin, TimestampMixin):
     severity: Mapped[str] = mapped_column(String(50), nullable=True)  # critical, warning, info
     reasons: Mapped[str] = mapped_column(Text, nullable=True)  # JSON-encoded list of reason strings
     ensemble_scores: Mapped[str] = mapped_column(Text, nullable=True)  # JSON-encoded dict of per-method scores
+    feedback_status: Mapped[str] = mapped_column(String(20), nullable=False, default='unreviewed', server_default=text('unreviewed'))  # unreviewed/true_positive/false_positive
+    feedback_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    feedback_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
     def __repr__(self) -> str:
         return f"<Anomaly {self.metric_name}={self.value} (confidence={self.confidence_score:.2f})>"

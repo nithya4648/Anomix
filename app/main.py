@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.core.database import init_db
-from app.api import metrics, incidents, ml, websocket, alerts
+from app.api import metrics, incidents, ml, websocket, alerts, analytics, config
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -72,8 +72,9 @@ def create_app() -> FastAPI:
     app.include_router(incidents.router)
     app.include_router(ml.router)
     app.include_router(websocket.router)
+    app.include_router(config.router)
     app.include_router(alerts.router)
-
+    
     @app.get("/health")
     async def health_check():
         """Health check endpoint"""

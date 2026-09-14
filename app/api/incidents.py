@@ -11,6 +11,7 @@ from app.schemas import (
     IncidentCreate,
     IncidentUpdate,
     IncidentResponse,
+    AnomalyFeedbackRequest,
 )
 from app.services.metric_service import AnomalyService
 from app.core.logging import get_logger
@@ -188,3 +189,43 @@ async def resolve_incident(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to resolve incident",
         )
+
+@router.post("/anomalies/{anomaly_id}/feedback", response_model=AnomalyResponse)
+async def add_anomaly_feedback(
+    anomaly_id: str,
+    payload: AnomalyFeedbackRequest,
+    db: Session = Depends(get_db),
+    _: str = Depends(verify_api_key),
+) -> AnomalyResponse:
+    """Add feedback to an anomaly"""
+    try:
+        service = AnomalyService(db)
+        anomaly = service.add_feedback(
+            anomaly_id=anomaly_id,
+            status=payload.feedback_status,
+            note=payload.feedback_note,
+        )
+        return AnomalyResponse(
+            id=anomaly.id,
+            metric_name=anomaly.metric_name,
+            metric_id=anomaly.metric_id,
+            anomaly_timestamp=anomaly.anomaly_timestamp,
+            value=anomaly.value,
+            confidence_score=anomaly.confidence_score,
+            detection_method=anomaly.detection_method,
+            z_score=anomaly.z_score,
+            expected_value=anomaly.expected_value,
+            is_confirmed=anomaly.is_confirmed,
+            severity=anomaly.severity,
+            reasons=anomaly.reasons,
+            ensemble_scores=anomaly.ensemble_scores,
+            feedback_status=anomaly.feedback_status,
+            feedback_note=anomaly.feedback_note,
+            feedback_at=anomaly.feedback_at,
+            created_at=anomaly.created_at,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error adding feedback: {e}")
+        raise HTTPException(status_code=500, detail="Failed to add feedback")

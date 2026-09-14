@@ -14,9 +14,14 @@ import {
   XCircle, 
   Clock, 
   ShieldAlert, 
-  Radio
+  Radio,
+  Sparkles,
+  HelpCircle
 } from 'lucide-react'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { Settings } from 'lucide-react'
+import RuleConfigPanel from '../components/RuleConfigPanel'
+import { AnomalyFeedbackModal } from '../components/AnomalyFeedbackModal'
 
 const METRIC_NAMES = ['cpu_usage', 'memory_usage', 'api_latency', 'disk_io', 'request_rate']
 
@@ -84,6 +89,8 @@ export const Dashboard = () => {
   const [selectedMetric, setSelectedMetric] = useState<string>(METRIC_NAMES[0])
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date())
+  const [showRuleConfig, setShowRuleConfig] = useState(false)
+  const [selectedFeedbackAnomaly, setSelectedFeedbackAnomaly] = useState<Anomaly | null>(null)
 
   const wsUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000/ws/api/v1/updates`
   const { connected, subscribe, unsubscribe, onMessage } = useWebSocket(wsUrl)
@@ -242,6 +249,13 @@ export const Dashboard = () => {
               >
                 <RefreshCw className="h-3.5 w-3.5" />
               </button>
+              <button
+                onClick={() => setShowRuleConfig(true)}
+                title="Rule Configuration"
+                className="ml-2 rounded p-1 hover:bg-slate-800 text-slate-400 hover:text-white transition"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -368,7 +382,9 @@ export const Dashboard = () => {
                     <th className="px-6 py-3.5 font-semibold">Detection Method</th>
                     <th className="px-6 py-3.5 font-semibold">Value</th>
                     <th className="px-6 py-3.5 font-semibold">Confidence</th>
+                    <th className="px-6 py-3.5 font-semibold">Feedback / Label</th>
                     <th className="px-6 py-3.5 font-semibold">Timestamp</th>
+                    <th className="px-6 py-3.5 font-semibold text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
@@ -394,7 +410,7 @@ export const Dashboard = () => {
                             <div
                               className={`h-full rounded transition-all duration-300 ${
                                 anomaly.confidence_score > 0.8
-                                  ? 'bg-rose-500'
+                                    ? 'bg-rose-500'
                                   : anomaly.confidence_score > 0.5
                                   ? 'bg-amber-500'
                                   : 'bg-blue-500'
@@ -407,8 +423,35 @@ export const Dashboard = () => {
                           </span>
                         </div>
                       </td>
+                      <td className="px-6 py-4 text-xs">
+                        {anomaly.feedback_status === 'true_positive' ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-950/60 border border-emerald-800 px-2.5 py-1 text-emerald-300 font-medium">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                            True Positive
+                          </span>
+                        ) : anomaly.feedback_status === 'false_positive' ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-rose-950/60 border border-rose-800 px-2.5 py-1 text-rose-300 font-medium">
+                            <XCircle className="h-3.5 w-3.5 text-rose-400" />
+                            False Alarm
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-800/80 border border-slate-700 px-2.5 py-1 text-slate-400 font-medium">
+                            <HelpCircle className="h-3.5 w-3.5 text-slate-500" />
+                            Unreviewed
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-xs text-slate-400">
                         {new Date(anomaly.anomaly_timestamp).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => setSelectedFeedbackAnomaly(anomaly)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:border-indigo-500/50 hover:bg-indigo-950/40 hover:text-indigo-300 transition shadow-sm"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+                          Feedback
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -417,6 +460,22 @@ export const Dashboard = () => {
             </div>
           )}
         </div>
+      {/* Rule Config Panel */}
+      {showRuleConfig && <RuleConfigPanel onClose={() => setShowRuleConfig(false)} />}
+
+      {/* Anomaly Feedback Modal */}
+      {selectedFeedbackAnomaly && (
+        <AnomalyFeedbackModal
+          anomaly={selectedFeedbackAnomaly}
+          onClose={() => setSelectedFeedbackAnomaly(null)}
+          onFeedbackSubmitted={(updated) => {
+            setAnomalies((prev) =>
+              prev.map((a) => (a.id === updated.id ? { ...a, ...updated } : a))
+            )
+          }}
+        />
+      )}
+
       </main>
 
       {/* Footer */}

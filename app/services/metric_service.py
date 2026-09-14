@@ -2,13 +2,20 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
 from datetime import datetime, timedelta
 from typing import Optional 
+from fastapi import HTTPException
 from app.models.metric import Metric
 from app.models.anomaly import Anomaly
 from app.models.alert import Alert
 from app.models.incident import Incident
 from app.ml.anomaly_detector import AnomalyDetector, RootCauseAnalyzer
+from app.services.alert_rules import AlertRuleEngine
+import asyncio
+from app.services.correlation_service import CorrelationService
+from app.services.notification_service import NotificationService
+from app.websocket.manager_instance import ws_manager
 from app.core.logging import get_logger
 from app.core.config import get_settings
+from app.models.rule_config import RuleConfig
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -107,6 +114,8 @@ class AnomalyService:
         self.root_cause_analyzer = RootCauseAnalyzer()
         from app.services.alert_dampener import AlertDampener
         self.dampener = AlertDampener()
+        # Initialize alert rule engine with DB session for dynamic rules
+        self.rule_engine = AlertRuleEngine(db=self.db)
 
     def detect_and_create_alert(
         self,
@@ -148,6 +157,19 @@ class AnomalyService:
             logger.info(f"Alert suppressed due to fatigue dampening for {metric.metric_name} ({severity})")
             return None, None, None
 
+        # Evaluate alert rules
+        rule_matches = self.rule_engine.evaluate(
+            metric_name=metric.metric_name,
+            confidence=detection_result.confidence_score,
+            severity=severity,
+            timestamp=metric.timestamp,
+        )
+
+        # If no rule matches, do not generate an alert/incident
+        if not rule_matches:
+            logger.info(f"No alert rules triggered for {metric.metric_name} (confidence={detection_result.confidence_score:.2f})")
+            return None, None, None
+
         # Create anomaly record
         anomaly = Anomaly(
             metric_name=metric.metric_name,
@@ -162,56 +184,91 @@ class AnomalyService:
         self.db.add(anomaly)
         self.db.flush()
 
-        # Create alert
+        # Build combined reason message from rule matches
+        reasons_msg = ", ".join([match.message for match in rule_matches])
+
+        # Create alert with reasons
         alert = Alert(
             anomaly_id=anomaly.id,
             severity=severity,
-            message=f"Anomaly detected in {metric.metric_name}: {metric.value:.2f} (expected ~{detection_result.expected_value:.2f})" if detection_result.expected_value else f"Anomaly in {metric.metric_name}: {metric.value:.2f}",
+            message=reason_msg if (reason_msg := reasons_msg) else (
+                f"Anomaly detected in {metric.metric_name}: {metric.value:.2f} (expected ~{detection_result.expected_value:.2f})"
+                if detection_result.expected_value else f"Anomaly in {metric.metric_name}: {metric.value:.2f}"
+            ),
         )
         self.db.add(alert)
         self.db.flush()
 
-        # Check for existing open incident
-        existing_incident = (
-            self.db.query(Incident)
-            .filter(
-                and_(
-                    Incident.status.in_(["open", "investigating"]),
-                    Incident.detected_at >= datetime.utcnow() - timedelta(minutes=5),
+        # Trigger notifications (async, fire‑and‑forget)
+        try:
+            asyncio.create_task(
+                NotificationService().send_alert_notification(
+                    alert_id=alert.id,
+                    severity=severity,
+                    message=alert.message,
                 )
             )
-            .first()
-        )
+        except Exception:
+            pass
+
+        # Determine if incident should be auto‑created based on incident rule
+        create_incident = self.rule_engine.should_create_incident(metric.metric_name, metric.timestamp)
 
         incident = None
-        if existing_incident and existing_incident.severity == severity:
-            # Update existing incident
-            existing_incident.correlated_metrics = metric.metric_name
-            self.db.add(existing_incident)
-            alert.incident_id = existing_incident.id
-        else:
-            # Create new incident
-            incident = Incident(
-                title=f"{severity.upper()}: {metric.metric_name} Anomaly",
-                description=f"Anomaly detected in metric {metric.metric_name}",
-                status="open",
-                severity=severity,
-                detected_at=metric.timestamp,
-                correlated_metrics=metric.metric_name,
+        if create_incident:
+            # Check for existing open incident with matching severity
+            existing_incident = (
+                self.db.query(Incident)
+                .filter(
+                    and_(
+                        Incident.status.in_["open", "investigating"],
+                        Incident.detected_at >= datetime.utcnow() - timedelta(minutes=5),
+                    )
+                )
+                .first()
             )
-            self.db.add(incident)
-            self.db.flush()
+            if existing_incident and existing_incident.severity == severity:
+                existing_incident.correlated_metrics = metric.metric_name
+                self.db.add(existing_incident)
+                alert.incident_id = existing_incident.id
+            else:
+                incident = Incident(
+                    title=f"{severity.upper()}: {metric.metric_name} Anomaly",
+                    description=f"Anomaly detected in metric {metric.metric_name}",
+                    status="open",
+                    severity=severity,
+                    detected_at=metric.timestamp,
+                    correlated_metrics=metric.metric_name,
+                )
+                self.db.add(incident)
+                self.db.flush()
+                # Broadcast incident creation progress
+                asyncio.create_task(ws_manager.broadcast_progress({
+                    "event": "incident_created",
+                    "incident_id": incident.id,
+                    "stage": "incident_created",
+                    "percent": 33,
+                }))
+        # Compute root cause correlation
+        correlation_service = CorrelationService()
+        root_cause, correlated = correlation_service.compute_root_cause(self.db, metric.metric_name, metric.timestamp)
+        if root_cause:
+            incident.root_cause = root_cause
+            incident.correlated_metrics = correlated
             alert.incident_id = incident.id
 
-        self.db.commit()
-        self.db.refresh(anomaly)
-        self.db.refresh(alert)
-
-        logger.info(
-            f"Anomaly detected: {metric.metric_name}={metric.value} "
-            f"(confidence={detection_result.confidence_score:.2f})"
-        )
-
+        # Broadcast correlation progress (if root cause determined)
+        if incident and incident.root_cause:
+            asyncio.create_task(ws_manager.broadcast_progress({
+                "event": "correlation_done",
+                "incident_id": incident.id,
+                "stage": "correlated",
+                "percent": 66,
+            }))
+        # Schedule automatic recovery check based on rule config
+        if incident:
+            asyncio.create_task(self._attempt_auto_recovery(incident, metric.metric_name))
+        
         return anomaly, alert, incident
 
     def get_anomalies(
@@ -280,3 +337,60 @@ class AnomalyService:
 
         logger.info(f"Incident {incident_id} resolved")
         return incident
+
+    def add_feedback(self, anomaly_id: str, status: str, note: Optional[str] = None) -> Anomaly:
+        """Add user feedback to an anomaly.
+
+        Args:
+            anomaly_id: ID of the anomaly to update.
+            status: One of 'unreviewed', 'true_positive', 'false_positive'.
+            note: Optional free‑text note.
+        Returns:
+            The updated Anomaly instance.
+        """
+        allowed_statuses = {"unreviewed", "true_positive", "false_positive"}
+        if status not in allowed_statuses:
+            raise ValueError(f"Invalid feedback_status: {status}")
+
+        anomaly = self.db.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
+        if not anomaly:
+            raise ValueError(f"Anomaly {anomaly_id} not found")
+
+        anomaly.feedback_status = status
+        anomaly.feedback_note = note
+        anomaly.feedback_at = datetime.utcnow()
+        self.db.add(anomaly)
+        self.db.commit()
+        self.db.refresh(anomaly)
+        return anomaly
+    async def _attempt_auto_recovery(self, incident: Incident, metric_name: str) -> None:
+        """Attempt to auto‑resolve an incident after a configurable confirmation period.
+
+        The confirmation period is read from ``RuleConfig.recovery_confirmation_minutes``
+        for the specific metric (or the default config if none matches). After waiting
+        that many minutes the service checks the recent metric values; if none of them
+        trigger an anomaly the incident is marked as resolved.
+        """
+        # Determine confirmation period
+        rule_cfg = self.db.query(RuleConfig).filter(RuleConfig.metric_name == metric_name).first()
+        if not rule_cfg:
+            rule_cfg = self.db.query(RuleConfig).filter(RuleConfig.metric_name == "*").first()
+        confirmation_minutes = getattr(rule_cfg, "recovery_confirmation_minutes", 5) if rule_cfg else 5
+
+        # Wait for the confirmation window
+        await asyncio.sleep(confirmation_minutes * 60)
+
+        # Ensure the incident is still open
+        refreshed_incident = self.db.query(Incident).filter(Incident.id == incident.id).first()
+        if not refreshed_incident or refreshed_incident.status != "open":
+            return
+
+        # Resolve incident automatically
+        self.resolve_incident(incident.id)
+        # Broadcast auto‑resolution progress
+        asyncio.create_task(ws_manager.broadcast_progress({
+            "event": "incident_resolved_auto",
+            "incident_id": incident.id,
+            "stage": "auto_resolved",
+            "percent": 100,
+        }))
