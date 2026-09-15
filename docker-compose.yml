@@ -6,8 +6,6 @@ services:
       POSTGRES_USER: pulsewatch
       POSTGRES_PASSWORD: pulsewatch_dev
       POSTGRES_DB: pulsewatch
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,8 +19,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: pulsewatch-redis
-    ports:
-      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

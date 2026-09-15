@@ -47,7 +47,7 @@ docker-compose logs -f
      ```env
      DATABASE_URL=${POSTGRES_URL}
      REDIS_URL=${REDIS_URL}
-     CORS_ORIGINS=https://your-frontend-domain.up.railway.app
+    CORS_ORIGINS=["https://your-frontend-domain.up.railway.app"]
      ```
    - Railway automatically reads `Dockerfile.backend` and `Dockerfile.frontend` to instantiate services.
 
@@ -58,6 +58,11 @@ docker-compose logs -f
 1. Create a **Web Service** for the backend pointing to `Dockerfile.backend`.
 2. Create a **Static Site** for the frontend pointing to `frontend/dist` with Build Command `npm run build`.
 3. Set environment variable `VITE_WS_URL` to your backend websocket URL.
+4. Set the backend `CORS_ORIGINS` environment variable to a JSON array containing
+  the exact frontend origin, with no trailing slash:
+  ```env
+  CORS_ORIGINS=["https://anomix-omega.vercel.app"]
+  ```
 
 ---
 

@@ -6,12 +6,11 @@ import {
   ShieldAlert, 
   Sliders, 
   Radio, 
-  Clock, 
   RefreshCw,
-  Activity
 } from 'lucide-react'
 import { anomalyAPI, incidentAPI } from '../api/client'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { Footer } from './Footer'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -52,8 +51,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <div>
           {/* Brand Header */}
           <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30">
-              <Radio className="h-5 w-5 animate-pulse" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30">
+              <Radio className="h-5 w-5" />
             </div>
             <div>
               <h1 className="text-base font-bold text-white tracking-tight">Anomix</h1>
@@ -67,7 +66,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               to="/"
               end
               className={({ isActive }) =>
-                `flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-all ${
+                `flex items-center justify-between rounded-lg px-3 py-2 transition-all ${
                   isActive
                     ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20'
                     : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
@@ -83,7 +82,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <NavLink
               to="/anomalies"
               className={({ isActive }) =>
-                `flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-all ${
+                `flex items-center justify-between rounded-lg px-3 py-2 transition-all ${
                   isActive
                     ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20'
                     : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
@@ -94,8 +93,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 <AlertTriangle className="h-4 w-4" />
                 <span>Anomalies</span>
               </div>
-              {activeAnomalyCount > 0 && (
-                <span className="rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 text-[10px] font-bold">
+                {activeAnomalyCount > 0 && (
+                  <span className="rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 text-[10px] font-bold">
                   {activeAnomalyCount}
                 </span>
               )}
@@ -104,7 +103,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <NavLink
               to="/incidents"
               className={({ isActive }) =>
-                `flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-all ${
+                `flex items-center justify-between rounded-lg px-3 py-2 transition-all ${
                   isActive
                     ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20'
                     : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
@@ -116,7 +115,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 <span>Incidents</span>
               </div>
               {activeIncidentCount > 0 && (
-                <span className="rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 text-[10px] font-bold">
+                <span className="rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 text-[10px] font-bold">
                   {activeIncidentCount}
                 </span>
               )}
@@ -125,7 +124,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <NavLink
               to="/rules"
               className={({ isActive }) =>
-                `flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-all ${
+                `flex items-center justify-between rounded-lg px-3 py-2 transition-all ${
                   isActive
                     ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20'
                     : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
@@ -142,7 +141,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
         {/* Sidebar Footer Status */}
         <div className="p-4 border-t border-slate-800">
-          <div className="flex items-center justify-between rounded-xl bg-slate-950/80 p-3 border border-slate-800 text-xs">
+          <div className="flex items-center justify-between rounded-lg bg-slate-950/80 p-3 border border-slate-800 text-xs">
             <div className="flex items-center gap-2">
               <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
               <span className="text-slate-300 font-medium">{connected ? 'Live Sync' : 'Offline'}</span>
@@ -161,6 +160,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       {/* Main Content Viewport */}
       <main className="flex-1 overflow-y-auto bg-slate-950">
         {children}
+        <Footer />
       </main>
     </div>
   )

@@ -1,6 +1,6 @@
-# PulseWatch - Real-time Anomaly Detection Platform
+# Anomix - Enterprise Real-time Anomaly Detection Platform
 
-A production-ready, full-stack anomaly detection platform built with FastAPI, PostgreSQL, React, and real ML models (IsolationForest, Z-Score). Detects anomalies in real-time, generates incidents, and streams live updates via WebSocket.
+An enterprise-grade anomaly detection platform combining ensemble ML (Z-score, IsolationForest, and trend detection) with incident correlation and real-time WebSocket streaming for production observability.
 
 ## Architecture Overview
 
@@ -237,6 +237,24 @@ npm run dev
 # Build for production
 npm run build
 ```
+
+## Upcoming Features
+
+### Phase 2: Operator Intelligence
+- [ ] Real-time detection progress tracking
+- [ ] 24-hour health snapshot dashboard
+- [ ] User-configurable anomaly thresholds
+- [ ] Automatic recovery detection visualization
+
+### Phase 3: Advanced Analysis
+- [ ] Root-cause correlation explainability
+- [ ] Forecasting capability
+- [ ] Custom detector plugins
+
+### Phase 4: Integration & Scale
+- [ ] Grafana integration
+- [ ] Kubernetes operators
+- [ ] Multi-tenant support
 
 ## API Documentation
 
