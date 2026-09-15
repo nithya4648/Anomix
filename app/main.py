@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.core.database import init_db
 from app.api import metrics, incidents, ml, websocket, alerts, analytics, config
+
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -22,6 +24,7 @@ async def lifespan(app: FastAPI):
     logger.info("Database initialized")
 
     consumer_task = None
+
     if settings.use_redis:
         consumer_task = asyncio.create_task(start_stream_consumer())
         logger.info("Started Redis Streams background consumer task.")
@@ -30,6 +33,7 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info("PulseWatch API shutting down...")
+
     if consumer_task:
         consumer_task.cancel()
         try:
@@ -63,8 +67,13 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def log_requests(request: Request, call_next):
         logger.debug(f"{request.method} {request.url.path}")
+
         response = await call_next(request)
-        logger.debug(f"{request.method} {request.url.path} -> {response.status_code}")
+
+        logger.debug(
+            f"{request.method} {request.url.path} -> {response.status_code}"
+        )
+
         return response
 
     # Include routers
@@ -74,7 +83,8 @@ def create_app() -> FastAPI:
     app.include_router(websocket.router)
     app.include_router(config.router)
     app.include_router(alerts.router)
-    
+    app.include_router(analytics.router)
+
     @app.get("/health")
     async def health_check():
         """Health check endpoint"""
@@ -99,6 +109,7 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
 
 if __name__ == "__main__":
     import uvicorn
