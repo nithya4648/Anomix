@@ -25,13 +25,21 @@ export const useWebSocket = (url: string) => {
       }
     }
 
+    const closeSocket = () => {
+      if (!ws.current) return
+      ws.current.onclose = null
+      ws.current.onerror = null
+      ws.current.close()
+      ws.current = null
+    }
+
     const connect = (resetBackoff = false) => {
       if (disposed.current) return
       if (resetBackoff) reconnectAttempt.current = 0
       clearReconnectTimer()
 
       if (ws.current && (ws.current.readyState === WebSocket.OPEN || ws.current.readyState === WebSocket.CONNECTING)) {
-        ws.current.close()
+        closeSocket()
       }
 
       const socket = new WebSocket(url)
@@ -86,10 +94,7 @@ export const useWebSocket = (url: string) => {
       disposed.current = true
       clearReconnectTimer()
       window.removeEventListener('pageshow', handlePageShow)
-      if (ws.current) {
-        ws.current.close()
-        ws.current = null
-      }
+      closeSocket()
       setConnected(false)
     }
   }, [url])

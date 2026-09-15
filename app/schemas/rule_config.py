@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from uuid import UUID
 
 class RuleConfigBase(BaseModel):
     metric_name: str = Field(..., description="Metric name, * for all")
@@ -21,6 +22,6 @@ class RuleConfigUpdate(BaseModel):
     recovery_confirmation_minutes: Optional[int] = None
 
 class RuleConfigResponse(RuleConfigBase):
-    id: str
+    id: UUID
     class Config:
         from_attributes = True

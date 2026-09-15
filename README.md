@@ -511,7 +511,7 @@ docker-compose up db
 
 ```bash
 # Check CORS in .env
-CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+CORS_ORIGINS=["http://localhost:5173","http://localhost:3000","https://anomix-omega.vercel.app"]
 
 # Verify WebSocket endpoint
 curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" \

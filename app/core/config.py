@@ -1,5 +1,8 @@
 # pyrefly: ignore [missing-import]
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import json
+from typing import Annotated
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+from pydantic import field_validator, model_validator
 from functools import lru_cache
 
 
@@ -23,7 +26,7 @@ class Settings(BaseSettings):
     api_key: str
 
     # CORS - Accept from Nginx proxy and direct connections
-    cors_origins: list[str] = [
+    cors_origins: Annotated[list[str], NoDecode] = [
         "http://localhost",
         "http://localhost:80",
         "http://127.0.0.1",
@@ -52,6 +55,24 @@ class Settings(BaseSettings):
         "Accept",
         "Origin",
     ]
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: object) -> list[str]:
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                value = value.split(",")
+        if not isinstance(value, list):
+            raise ValueError("CORS_ORIGINS must be a JSON array or comma-separated string")
+        return [origin.strip().rstrip("/") for origin in value if origin.strip()]
+
+    @model_validator(mode="after")
+    def validate_cors_configuration(self) -> "Settings":
+        if self.cors_allow_credentials and "*" in self.cors_origins:
+            raise ValueError("CORS_ORIGINS cannot contain '*' when credentials are enabled")
+        return self
 
     # ML / Anomaly Detection
     anomaly_detection_method: str = "isolation_forest"
