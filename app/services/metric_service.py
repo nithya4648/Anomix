@@ -313,6 +313,11 @@ class AnomalyService:
 
         return query.order_by(desc(Incident.detected_at)).limit(limit).all()
 
+    def get_incident(self, incident_id: str) -> Optional[Incident]:
+        """Return one incident by its string UUID, or None when absent."""
+
+        return self.db.query(Incident).filter(Incident.id == incident_id).first()
+
     def resolve_incident(self, incident_id: str, root_cause: str = None) -> Incident:
         """Mark incident as resolved"""
 

@@ -14,7 +14,7 @@ from app.models.anomaly import Anomaly
 from app.models.incident import Incident
 from app.models.alert import Alert
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
+router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 
 
 def get_db():

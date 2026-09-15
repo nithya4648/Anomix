@@ -5,7 +5,7 @@ from app.core.database import get_db
 from app.models.rule_config import RuleConfig
 from app.schemas.rule_config import RuleConfigCreate, RuleConfigUpdate, RuleConfigResponse
 
-router = APIRouter(prefix="/config/rules", tags=["Rule Config"])
+router = APIRouter(prefix="/api/config/rules", tags=["Rule Config"])
 
 @router.post("/", response_model=RuleConfigResponse)
 def create_rule(rule: RuleConfigCreate, db: Session = Depends(get_db)):

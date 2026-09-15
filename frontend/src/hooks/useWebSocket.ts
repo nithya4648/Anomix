@@ -7,46 +7,90 @@ export interface WebSocketMessage {
 
 export const useWebSocket = (url: string) => {
   const ws = useRef<WebSocket | null>(null)
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectAttempt = useRef(0)
+  const disposed = useRef(false)
   const [connected, setConnected] = useState(false)
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null)
   const messageHandlers = useRef<Map<string, (data: any) => void>>(new Map())
 
   useEffect(() => {
-    ws.current = new WebSocket(url)
+    disposed.current = false
+    reconnectAttempt.current = 0
 
-    ws.current.onopen = () => {
-      console.log('WebSocket connected')
-      setConnected(true)
-    }
-
-    ws.current.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data)
-        setLastMessage(message)
-
-        const handler = messageHandlers.current.get(message.type)
-        if (handler) {
-          handler(message)
-        }
-      } catch (error) {
-        console.error('Failed to parse WebSocket message:', error)
+    const clearReconnectTimer = () => {
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current)
+        reconnectTimer.current = null
       }
     }
 
-    ws.current.onerror = (error) => {
-      console.error('WebSocket error:', error)
-      setConnected(false)
-    }
+    const connect = (resetBackoff = false) => {
+      if (disposed.current) return
+      if (resetBackoff) reconnectAttempt.current = 0
+      clearReconnectTimer()
 
-    ws.current.onclose = () => {
-      console.log('WebSocket disconnected')
-      setConnected(false)
-    }
-
-    return () => {
-      if (ws.current) {
+      if (ws.current && (ws.current.readyState === WebSocket.OPEN || ws.current.readyState === WebSocket.CONNECTING)) {
         ws.current.close()
       }
+
+      const socket = new WebSocket(url)
+      ws.current = socket
+
+      socket.onopen = () => {
+        if (socket !== ws.current) return
+        reconnectAttempt.current = 0
+        console.log('WebSocket connected')
+        setConnected(true)
+      }
+
+      socket.onmessage = (event) => {
+        if (socket !== ws.current) return
+        try {
+          const message = JSON.parse(event.data)
+          setLastMessage(message)
+
+          const handler = messageHandlers.current.get(message.type)
+          if (handler) {
+            handler(message)
+          }
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error)
+        }
+      }
+
+      socket.onerror = (error) => {
+        if (socket !== ws.current) return
+        console.error('WebSocket error:', error)
+        setConnected(false)
+      }
+
+      socket.onclose = () => {
+        if (socket !== ws.current || disposed.current) return
+        setConnected(false)
+        const delay = Math.min(1000 * 2 ** reconnectAttempt.current, 30000)
+        reconnectAttempt.current += 1
+        reconnectTimer.current = setTimeout(() => connect(), delay)
+        console.log(`WebSocket disconnected; reconnecting in ${delay}ms`)
+      }
+    }
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) connect(true)
+    }
+
+    window.addEventListener('pageshow', handlePageShow)
+    connect()
+
+    return () => {
+      disposed.current = true
+      clearReconnectTimer()
+      window.removeEventListener('pageshow', handlePageShow)
+      if (ws.current) {
+        ws.current.close()
+        ws.current = null
+      }
+      setConnected(false)
     }
   }, [url])
 

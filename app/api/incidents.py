@@ -149,6 +149,47 @@ async def get_incidents(
         )
 
 
+@router.get("/incidents/{incident_id}", response_model=IncidentResponse)
+async def get_incident(
+    incident_id: str,
+    db: Session = Depends(get_db),
+    _: str = Depends(verify_api_key),
+) -> IncidentResponse:
+    """Get one incident by its ID."""
+
+    try:
+        incident = AnomalyService(db).get_incident(incident_id)
+        if incident is None:
+            raise HTTPException(
+                status_code=http_status.HTTP_404_NOT_FOUND,
+                detail="Incident not found",
+            )
+
+        return IncidentResponse(
+            id=incident.id,
+            title=incident.title,
+            description=incident.description,
+            status=incident.status,
+            severity=incident.severity,
+            detected_at=incident.detected_at,
+            resolved_at=incident.resolved_at,
+            root_cause=incident.root_cause,
+            correlated_metrics=incident.correlated_metrics,
+            confidence=incident.confidence,
+            progress_stage=incident.progress_stage,
+            progress_percent=incident.progress_percent,
+            created_at=incident.created_at,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting incident {incident_id}: {e}")
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch incident",
+        )
+
+
 @router.post("/incidents/{incident_id}/resolve", response_model=IncidentResponse)
 async def resolve_incident(
     incident_id: str,
