@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+import sqlalchemy
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Optional
 from app.core.database import get_db
 from app.models import Metric
-from app.utils.security import verify_api_key
+from app.utils.auth import get_current_user
 from app.schemas import MetricCreate, MetricResponse, MetricsRangeQuery
 from app.services.metric_service import MetricService, AnomalyService
 from app.websocket.manager import WebSocketManager
@@ -16,11 +17,16 @@ router = APIRouter(prefix="/api/v1/metrics", tags=["metrics"])
 ws_manager = WebSocketManager()
 
 
+from app.core.limiter import limiter
+from fastapi import Request
+
 @router.post("/ingest", response_model=MetricResponse)
+@limiter.limit("1000/minute")
 async def ingest_metric(
+    request: Request,
     metric: MetricCreate,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> MetricResponse:
     """
     Ingest a new metric and run anomaly detection.
@@ -38,28 +44,31 @@ async def ingest_metric(
 
     try:
         if settings.use_redis:
-            # Asynchronous ingestion pipeline via Redis Stream
-            redis_client = aioredis.from_url(settings.redis_url, decode_responses=True)
             try:
-                msg_payload = {
-                    "metric_name": metric.metric_name,
-                    "value": str(metric.value),
-                    "timestamp": metric.timestamp.isoformat() if metric.timestamp else datetime.utcnow().isoformat(),
-                    "labels": json.dumps(metric.labels or {}),
-                }
-                await redis_client.xadd("metrics:ingest", msg_payload)
-            finally:
-                await redis_client.close()
-
-            # Return preliminary accepted response
-            return MetricResponse(
-                id=0,
-                metric_name=metric.metric_name,
-                value=metric.value,
-                timestamp=metric.timestamp or datetime.utcnow(),
-                labels=metric.labels or {},
-                created_at=datetime.utcnow(),
-            )
+                # Asynchronous ingestion pipeline via Redis Stream
+                redis_client = aioredis.from_url(settings.redis_url, decode_responses=True)
+                try:
+                    msg_payload = {
+                        "metric_name": metric.metric_name,
+                        "value": str(metric.value),
+                        "timestamp": metric.timestamp.isoformat() if metric.timestamp else datetime.utcnow().isoformat(),
+                        "labels": json.dumps(metric.labels or {}),
+                    }
+                    await redis_client.xadd("metrics:ingest", msg_payload)
+                finally:
+                    await redis_client.close()
+    
+                # Return preliminary accepted response
+                return MetricResponse(
+                    id="0",
+                    metric_name=metric.metric_name,
+                    value=metric.value,
+                    timestamp=metric.timestamp or datetime.utcnow(),
+                    labels=metric.labels or {},
+                    created_at=datetime.utcnow(),
+                )
+            except Exception as e:
+                logger.warning(f"Redis connection failed, falling back to DB: {e}")
 
         metric_service = MetricService(db)
         anomaly_service = AnomalyService(db)
@@ -106,6 +115,12 @@ async def ingest_metric(
             "created_at": stored_metric.created_at,
         })
 
+    except sqlalchemy.exc.SQLAlchemyError as e:
+        logger.error(f"Database error ingesting metric: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database connection error",
+        )
     except Exception as e:
         logger.error(f"Error ingesting metric: {e}")
         raise HTTPException(
@@ -120,7 +135,7 @@ async def get_metrics_range(
     start_time: datetime,
     end_time: datetime,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> list[MetricResponse]:
     """Get metrics within a time range"""
 
@@ -153,7 +168,7 @@ async def get_recent_metrics(
     metric_name: str,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> list[MetricResponse]:
     """Get recent metrics for a metric name"""
 

@@ -8,19 +8,23 @@ import { AlertRules } from './pages/AlertRules'
 import { PrivacyPolicy } from './pages/PrivacyPolicy'
 import { TermsAndConditions } from './pages/TermsAndConditions'
 
+import { ErrorBoundary } from './components/ErrorBoundary'
+
 function App() {
   return (
-    <AppShell>
-      <Routes>
-        <Route path="/" element={<Overview />} />
-        <Route path="/anomalies" element={<Anomalies />} />
-        <Route path="/incidents" element={<Incidents />} />
-        <Route path="/incidents/:id" element={<IncidentDetail />} />
-        <Route path="/rules" element={<AlertRules />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsAndConditions />} />
-      </Routes>
-    </AppShell>
+    <ErrorBoundary>
+      <AppShell>
+        <Routes>
+          <Route path="/" element={<Overview />} />
+          <Route path="/anomalies" element={<Anomalies />} />
+          <Route path="/incidents" element={<Incidents />} />
+          <Route path="/incidents/:id" element={<IncidentDetail />} />
+          <Route path="/rules" element={<AlertRules />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
+        </Routes>
+      </AppShell>
+    </ErrorBoundary>
   )
 }
 

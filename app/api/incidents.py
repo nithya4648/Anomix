@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Optional
 from app.core.database import get_db
-from app.utils.security import verify_api_key
+from app.utils.auth import get_current_user
 from app.schemas import (
     AnomalyResponse,
     AlertResponse,
@@ -15,6 +15,8 @@ from app.schemas import (
 )
 from app.services.metric_service import AnomalyService
 from app.core.logging import get_logger
+from app.core.limiter import limiter
+from fastapi import Request
 
 logger = get_logger(__name__)
 
@@ -22,13 +24,15 @@ router = APIRouter(prefix="/api/v1", tags=["anomalies", "incidents"])
 
 
 @router.get("/anomalies", response_model=list[AnomalyResponse])
+@limiter.limit("100/minute")
 async def get_anomalies(
+    request: Request,
     metric_name: str,
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> list[AnomalyResponse]:
     """Get anomalies for a specific metric"""
 
@@ -70,10 +74,12 @@ async def get_anomalies(
 
 
 @router.get("/anomalies/recent", response_model=list[AnomalyResponse])
+@limiter.limit("100/minute")
 async def get_recent_anomalies(
+    request: Request,
     limit: int = 50,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> list[AnomalyResponse]:
     """Get recent anomalies across all metrics"""
 
@@ -110,11 +116,13 @@ async def get_recent_anomalies(
 
 
 @router.get("/incidents", response_model=list[IncidentResponse])
+@limiter.limit("100/minute")
 async def get_incidents(
+    request: Request,
     status: Optional[str] = None,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> list[IncidentResponse]:
     """Get incidents with optional status filter"""
 
@@ -153,7 +161,7 @@ async def get_incidents(
 async def get_incident(
     incident_id: str,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> IncidentResponse:
     """Get one incident by its ID."""
 
@@ -195,7 +203,7 @@ async def resolve_incident(
     incident_id: str,
     update: IncidentUpdate,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> IncidentResponse:
     """Resolve an incident"""
 
@@ -236,7 +244,7 @@ async def add_anomaly_feedback(
     anomaly_id: str,
     payload: AnomalyFeedbackRequest,
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _: str = Depends(get_current_user),
 ) -> AnomalyResponse:
     """Add feedback to an anomaly"""
     try:

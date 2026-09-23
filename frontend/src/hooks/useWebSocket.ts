@@ -48,7 +48,7 @@ export const useWebSocket = (url: string) => {
       socket.onopen = () => {
         if (socket !== ws.current) return
         reconnectAttempt.current = 0
-        console.log('WebSocket connected')
+        reconnectAttempt.current = 0
         setConnected(true)
       }
 
@@ -79,7 +79,7 @@ export const useWebSocket = (url: string) => {
         const delay = Math.min(1000 * 2 ** reconnectAttempt.current, 30000)
         reconnectAttempt.current += 1
         reconnectTimer.current = setTimeout(() => connect(), delay)
-        console.log(`WebSocket disconnected; reconnecting in ${delay}ms`)
+        reconnectTimer.current = setTimeout(() => connect(), delay)
       }
     }
 

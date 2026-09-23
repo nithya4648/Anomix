@@ -40,7 +40,7 @@ export const AnomalyFeedbackModal: React.FC<AnomalyFeedbackModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-2.5 text-indigo-400 border border-indigo-500/30">
+            <div className="rounded-xl bg-indigo-500/20 p-2.5 text-indigo-400 border border-indigo-500/30">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
@@ -163,7 +163,7 @@ export const AnomalyFeedbackModal: React.FC<AnomalyFeedbackModalProps> = ({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 hover:from-blue-500 hover:to-indigo-500 transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               <span>Save Feedback</span>

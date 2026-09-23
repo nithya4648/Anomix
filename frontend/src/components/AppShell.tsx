@@ -143,7 +143,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <div className="p-4 border-t border-slate-800">
           <div className="flex items-center justify-between rounded-lg bg-slate-950/80 p-3 border border-slate-800 text-xs">
             <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
+              <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-rose-400'}`} />
               <span className="text-slate-300 font-medium">{connected ? 'Live Sync' : 'Offline'}</span>
             </div>
             <button

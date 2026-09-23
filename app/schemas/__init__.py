@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from typing import Optional, Any
 
@@ -6,9 +6,31 @@ from typing import Optional, Any
 # Metric Schemas
 class MetricCreate(BaseModel):
     metric_name: str = Field(..., min_length=1, max_length=256)
-    value: float = Field(..., description="Metric value")
+    value: float = Field(..., ge=-1e10, le=1e10, description="Metric value")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
-    labels: Optional[dict[str, Any]] = Field(default_factory=dict)
+    labels: Optional[dict[str, Any]] = Field(default_factory=dict, max_length=20)
+
+    @field_validator("metric_name")
+    @classmethod
+    def validate_metric_name(cls, v: str) -> str:
+        import re
+        if re.search(r'[^\w\s-]', v):
+            raise ValueError("metric_name cannot contain regex special characters")
+        
+        sql_keywords = {"SELECT", "INSERT", "UPDATE", "DELETE", "DROP", "UNION", "AND", "OR"}
+        upper_v = v.upper()
+        if any(keyword in upper_v for keyword in sql_keywords):
+            raise ValueError(f"metric_name contains forbidden SQL keyword")
+        return v
+
+    @field_validator("labels")
+    @classmethod
+    def validate_labels(cls, v: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+        if v:
+            for key, val in v.items():
+                if isinstance(val, str) and len(val) > 500:
+                    raise ValueError(f"Label {key} value exceeds 500 characters")
+        return v
 
 
 class MetricResponse(BaseModel):

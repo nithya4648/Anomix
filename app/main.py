@@ -54,6 +54,20 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    from slowapi.middleware import SlowAPIMiddleware
+    from slowapi.errors import RateLimitExceeded
+    from fastapi.responses import JSONResponse
+    from app.core.limiter import limiter
+
+    app.state.limiter = limiter
+    app.add_middleware(SlowAPIMiddleware)
+    @app.exception_handler(RateLimitExceeded)
+    async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+        return JSONResponse(
+            status_code=429,
+            content={"detail": f"Rate limit exceeded: {exc.detail}"},
+        )
+
     # CORS Middleware
     app.add_middleware(
         CORSMiddleware,
@@ -88,10 +102,38 @@ def create_app() -> FastAPI:
     @app.get("/health")
     async def health_check():
         """Health check endpoint"""
+        from app.core.database import SessionLocal
+        from sqlalchemy import text
+        from fastapi import HTTPException
+        import redis.asyncio as aioredis
+        
+        db_ok = True
+        redis_ok = True
+        try:
+            db = SessionLocal()
+            db.execute(text("SELECT 1"))
+            db.close()
+        except Exception:
+            db_ok = False
+        
+        if settings.use_redis:
+            try:
+                r = aioredis.from_url(settings.redis_url)
+                await r.ping()
+                await r.close()
+            except Exception:
+                redis_ok = False
+                
+        status_val = "ok" if db_ok and redis_ok else "error"
+        if status_val == "error":
+            raise HTTPException(status_code=503, detail={"status": "error", "db_ok": db_ok, "redis_ok": redis_ok})
+            
         return {
-            "status": "healthy",
+            "status": status_val,
             "service": "pulsewatch",
             "version": "0.1.0",
+            "db_ok": db_ok,
+            "redis_ok": redis_ok
         }
 
     @app.get("/api/v1/info")
