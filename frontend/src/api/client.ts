@@ -13,6 +13,10 @@ export type {
   EvaluationMetric,
 } from '../types'
 
+// IMPORTANT: VITE_API_KEY must be configured in Vercel's environment variables and must
+// exactly match the backend's API_KEY environment variable set on Render.
+// Note: Vite bakes environment variables into client bundles at build time, so a full
+// rebuild (re-deploy) is required on Vercel whenever VITE_API_KEY is updated.
 const API_KEY = import.meta.env.VITE_API_KEY || 'anomix_dev_key_change_in_prod'
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
