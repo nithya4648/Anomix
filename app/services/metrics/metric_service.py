@@ -7,7 +7,8 @@ from app.models.metric import Metric
 from app.models.anomaly import Anomaly
 from app.models.alert import Alert
 from app.models.incident import Incident
-from app.ml.anomaly_detector import AnomalyDetector, RootCauseAnalyzer
+from app.ml import AnomalyDetector, RootCauseAnalyzer
+
 from app.services.alert_rules import AlertRuleEngine
 import asyncio
 from app.services.correlation_service import CorrelationService

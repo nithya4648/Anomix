@@ -13,7 +13,7 @@ def configure_logging():
         level=settings.log_level,
     )
     logger.add(
-        "logs/pulsewatch.log",
+        "logs/anomix.log",
         format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
         level=settings.log_level,
         rotation="500 MB",

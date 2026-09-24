@@ -48,7 +48,6 @@ export const useWebSocket = (url: string) => {
       socket.onopen = () => {
         if (socket !== ws.current) return
         reconnectAttempt.current = 0
-        reconnectAttempt.current = 0
         setConnected(true)
       }
 
@@ -78,7 +77,6 @@ export const useWebSocket = (url: string) => {
         setConnected(false)
         const delay = Math.min(1000 * 2 ** reconnectAttempt.current, 30000)
         reconnectAttempt.current += 1
-        reconnectTimer.current = setTimeout(() => connect(), delay)
         reconnectTimer.current = setTimeout(() => connect(), delay)
       }
     }

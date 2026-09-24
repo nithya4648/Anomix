@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 import pytest
-from scripts.real_metrics_bridge import collect_system_metrics, post_metric
+from scripts.integration.real_metrics_bridge import collect_system_metrics, post_metric
+
 
 def test_collect_system_metrics():
     metrics = collect_system_metrics()

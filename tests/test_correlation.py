@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
-from app.ml.anomaly_detector import RootCauseAnalyzer
+from app.ml import RootCauseAnalyzer
+
 
 def test_correlation_analysis():
     analyzer = RootCauseAnalyzer(correlation_threshold=0.7)

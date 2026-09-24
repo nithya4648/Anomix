@@ -4,6 +4,7 @@ from app.models.anomaly import Anomaly
 from app.models.alert import Alert
 from app.models.incident import Incident
 from app.models.evaluation import EvaluationMetric
+from app.models.rule_config import RuleConfig
 
 __all__ = [
     "Base",
@@ -14,4 +15,5 @@ __all__ = [
     "Alert",
     "Incident",
     "EvaluationMetric",
+    "RuleConfig",
 ]

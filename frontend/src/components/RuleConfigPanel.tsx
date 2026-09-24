@@ -16,7 +16,7 @@ interface RuleConfigPanelProps {
   onClose: () => void
 }
 
-const API_KEY = import.meta.env.VITE_API_KEY || 'pulsewatch_dev_key_change_in_prod'
+const API_KEY = import.meta.env.VITE_API_KEY || 'anomix_dev_key_change_in_prod'
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 const RuleConfigPanel: React.FC<RuleConfigPanelProps> = ({ onClose }) => {

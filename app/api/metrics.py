@@ -7,14 +7,16 @@ from app.core.database import get_db
 from app.models import Metric
 from app.utils.auth import get_current_user
 from app.schemas import MetricCreate, MetricResponse, MetricsRangeQuery
-from app.services.metric_service import MetricService, AnomalyService
-from app.websocket.manager import WebSocketManager
+from app.services.metrics import MetricService, AnomalyService
+
+from app.websocket.manager import ws_manager
+import redis.asyncio as aioredis
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/metrics", tags=["metrics"])
-ws_manager = WebSocketManager()
+
 
 
 from app.core.limiter import limiter

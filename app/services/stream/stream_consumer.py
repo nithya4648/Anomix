@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.core.database import SessionLocal
-from app.services.metric_service import MetricService, AnomalyService
+from app.services.metrics import MetricService, AnomalyService
+
 from app.services.notification_service import NotificationService
 from app.websocket.manager_instance import ws_manager
 

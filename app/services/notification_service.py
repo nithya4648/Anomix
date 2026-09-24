@@ -24,7 +24,7 @@ class NotificationService:
         tasks = []
         if self._is_email_configured():
             tasks.append(self.send_email(
-                subject=f"[{severity.upper()}] PulseWatch Alert",
+                subject=f"[{severity.upper()}] Anomix Alert",
                 body=f"Alert ID: {alert_id}\nSeverity: {severity}\nMessage: {message}"
             ))
         else:

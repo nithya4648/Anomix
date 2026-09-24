@@ -10,6 +10,9 @@ from datetime import datetime, timedelta
 from typing import Optional
 from collections import defaultdict
 from sqlalchemy.orm import Session
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 @dataclass
 class AlertRule:
@@ -94,19 +97,23 @@ class AlertRuleEngine:
         """
         if db is not None and alert_rules is None:
             # Load RuleConfig entries from DB and convert to AlertRule objects
-            from app.models.rule_config import RuleConfig
-            configs = db.query(RuleConfig).all()
-            alert_rules = [
-                AlertRule(
-                    metric_name=c.metric_name,
-                    threshold_value=c.threshold_value,
-                    duration_minutes=c.duration_minutes,
-                    severity=c.severity,
-                    enabled=c.enabled,
-                    description="",
-                )
-                for c in configs
-            ]
+            try:
+                from app.models.rule_config import RuleConfig
+                configs = db.query(RuleConfig).all()
+                alert_rules = [
+                    AlertRule(
+                        metric_name=c.metric_name,
+                        threshold_value=c.threshold_value,
+                        duration_minutes=c.duration_minutes,
+                        severity=c.severity,
+                        enabled=c.enabled,
+                        description="",
+                    )
+                    for c in configs
+                ]
+            except Exception as e:
+                logger.warning(f"Could not load alert rules from DB, falling back to defaults: {e}")
+                alert_rules = None
         self.alert_rules = alert_rules or list(DEFAULT_ALERT_RULES)
         self.incident_rule = incident_rule or DEFAULT_INCIDENT_RULE
 

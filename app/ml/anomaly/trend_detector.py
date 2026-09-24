@@ -8,7 +8,8 @@ Detects sustained directional changes over a rolling window
 import numpy as np
 from typing import Optional
 from datetime import datetime
-from app.ml.anomaly_detector import AnomalyResult
+from app.ml.anomaly.anomaly_detector import AnomalyResult
+
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

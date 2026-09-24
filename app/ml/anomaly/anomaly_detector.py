@@ -90,7 +90,8 @@ class AnomalyDetector:
         historical_values: list[float],
     ) -> AnomalyResult:
         """LSTM Autoencoder sequence anomaly detection"""
-        from app.ml.lstm_autoencoder import PyTorchLSTMAutoencoder
+        from app.ml.models import PyTorchLSTMAutoencoder
+
 
         try:
             if metric_name not in self.models:

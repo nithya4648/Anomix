@@ -6,7 +6,8 @@ from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 from app.schemas import MetricCreate
-from app.services.stream_consumer import start_stream_consumer
+from app.services.stream import start_stream_consumer
+
 
 @pytest.mark.asyncio
 async def test_redis_stream_ingest_and_consumer():

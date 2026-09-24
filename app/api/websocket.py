@@ -1,11 +1,11 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from app.websocket.manager import WebSocketManager
+from app.websocket.manager_instance import WebSocketManager, ws_manager
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/ws", tags=["websocket"])
-ws_manager = WebSocketManager()
+
 
 
 @router.websocket("/api/v1/updates")

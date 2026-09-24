@@ -1,4 +1,4 @@
-from .manager import WebSocketManager
+from .manager import WebSocketManager, ws_manager
 
-# Global WebSocket manager instance shared across the application
-ws_manager = WebSocketManager()
+__all__ = ["WebSocketManager", "ws_manager"]
+

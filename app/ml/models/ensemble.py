@@ -9,8 +9,9 @@ human-readable list of reasons.
 from dataclasses import dataclass, field
 from typing import Optional
 from datetime import datetime
-from app.ml.anomaly_detector import AnomalyDetector, AnomalyResult
-from app.ml.trend_detector import TrendDetector
+from app.ml.anomaly.anomaly_detector import AnomalyDetector, AnomalyResult
+from app.ml.anomaly.trend_detector import TrendDetector
+
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

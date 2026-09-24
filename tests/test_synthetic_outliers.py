@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
-from scripts.data_simulator import MetricSimulator
+from scripts.data import MetricSimulator
+
 
 def test_synthetic_outlier_generation():
     simulator = MetricSimulator(seed=42)

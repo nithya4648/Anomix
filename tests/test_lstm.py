@@ -1,7 +1,8 @@
 import pytest
 import numpy as np
-from app.ml.lstm_autoencoder import PyTorchLSTMAutoencoder
-from app.ml.anomaly_detector import AnomalyDetector
+from app.ml.models import PyTorchLSTMAutoencoder
+from app.ml import AnomalyDetector
+
 
 def test_lstm_autoencoder_reconstruction():
     model = PyTorchLSTMAutoencoder(sequence_length=10)

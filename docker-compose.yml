@@ -1,15 +1,15 @@
 services:
   db:
     image: postgres:15-alpine
-    container_name: pulsewatch-db
+    container_name: anomix-db
     environment:
-      POSTGRES_USER: pulsewatch
-      POSTGRES_PASSWORD: pulsewatch_dev
-      POSTGRES_DB: pulsewatch
+      POSTGRES_USER: anomix
+      POSTGRES_PASSWORD: anomix_dev
+      POSTGRES_DB: anomix
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pulsewatch"]
+      test: ["CMD-SHELL", "pg_isready -U anomix"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -18,7 +18,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: pulsewatch-redis
+    container_name: anomix-redis
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -31,9 +31,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    container_name: pulsewatch-api
+    container_name: anomix-api
     environment:
-      DATABASE_URL: postgresql://pulsewatch:pulsewatch_dev@db:5432/pulsewatch
+      DATABASE_URL: postgresql://anomix:anomix_dev@db:5432/anomix
       DATABASE_POOL_SIZE: 20
       DATABASE_MAX_OVERFLOW: 10
       API_HOST: 0.0.0.0
@@ -41,7 +41,7 @@ services:
       API_WORKERS: 4
       DEBUG: "False"
       SECRET_KEY: your-super-secret-key-change-in-prod-min-32-chars
-      API_KEY: pulsewatch_dev_key_change_in_prod
+      API_KEY: anomix_dev_key_change_in_prod
 
       CORS_ORIGINS: '["https://anomix-omega.vercel.app"]'
 
@@ -79,7 +79,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: pulsewatch-frontend
+    container_name: anomix-frontend
     ports:
       - "80:80"
     depends_on:
@@ -96,5 +96,5 @@ volumes:
   postgres_data:
 
 networks:
-  pulsewatch:
+  anomix:
     driver: bridge

@@ -1,2 +1,2 @@
-# Expose CRUD modules
-from . import rule  # noqa: F401
+# CRUD operations package
+# Rule CRUD operations are handled directly by the API layer (app/api/config.py)

@@ -10,8 +10,9 @@ from app.models.base import Base
 from app.models.metric import Metric
 from app.models.incident import Incident
 from app.models.rule_config import RuleConfig
-from app.services.metric_service import MetricService, AnomalyService
-from app.services.stream_consumer import check_and_auto_recover_incidents
+from app.services.metrics import MetricService, AnomalyService
+from app.services.stream.stream_consumer import check_and_auto_recover_incidents
+
 
 
 @pytest.fixture

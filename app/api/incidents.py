@@ -13,7 +13,8 @@ from app.schemas import (
     IncidentResponse,
     AnomalyFeedbackRequest,
 )
-from app.services.metric_service import AnomalyService
+from app.services.metrics import AnomalyService
+
 from app.core.logging import get_logger
 from app.core.limiter import limiter
 from fastapi import Request

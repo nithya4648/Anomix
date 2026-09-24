@@ -106,3 +106,8 @@ class WebSocketManager:
 
         elif message_type == "ping":
             await websocket.send_json({"type": "pong"})
+
+
+# Global WebSocket manager instance shared across the application
+ws_manager = WebSocketManager()
+

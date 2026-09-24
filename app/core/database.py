@@ -27,7 +27,24 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     pass
 
 
+_db_initialized = False
+
+
+def init_db():
+    """Initialize database with all tables"""
+    global _db_initialized
+    import app.models  # Ensure all models are registered on Base.metadata
+    from app.models.base import Base
+    logger.info("Creating database tables...")
+    Base.metadata.create_all(bind=engine)
+    _db_initialized = True
+    logger.info("Database tables created successfully")
+
+
+
 def get_db() -> Session:
+    if not _db_initialized:
+        init_db()
     db = SessionLocal()
     try:
         yield db
@@ -35,9 +52,3 @@ def get_db() -> Session:
         db.close()
 
 
-def init_db():
-    """Initialize database with all tables"""
-    from app.models.base import Base
-    logger.info("Creating database tables...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created successfully")

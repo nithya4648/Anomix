@@ -6,7 +6,8 @@ from sqlalchemy import and_, desc
 from app.models.metric import Metric
 from app.models.anomaly import Anomaly
 from app.models.evaluation import EvaluationMetric
-from app.ml.evaluator import MetricsEvaluator
+from app.ml import MetricsEvaluator
+
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

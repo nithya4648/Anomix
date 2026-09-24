@@ -16,10 +16,11 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
     import asyncio
-    from app.services.stream_consumer import start_stream_consumer
+    from app.services.stream import start_stream_consumer
+
 
     # Startup
-    logger.info("PulseWatch API starting...")
+    logger.info("Anomix API starting...")
     init_db()
     logger.info("Database initialized")
 
@@ -32,7 +33,7 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown
-    logger.info("PulseWatch API shutting down...")
+    logger.info("Anomix API shutting down...")
 
     if consumer_task:
         consumer_task.cancel()
@@ -48,8 +49,8 @@ def create_app() -> FastAPI:
     configure_logging()
 
     app = FastAPI(
-        title="PulseWatch API",
-        description="Real-time anomaly detection platform",
+        title="Anomix API",
+        description="Anomix — Real-time anomaly detection platform",
         version="0.1.0",
         lifespan=lifespan,
     )
@@ -130,7 +131,7 @@ def create_app() -> FastAPI:
             
         return {
             "status": status_val,
-            "service": "pulsewatch",
+            "service": "anomix",
             "version": "0.1.0",
             "db_ok": db_ok,
             "redis_ok": redis_ok
@@ -140,9 +141,9 @@ def create_app() -> FastAPI:
     async def api_info():
         """API information endpoint"""
         return {
-            "name": "PulseWatch",
+            "name": "Anomix",
             "version": "0.1.0",
-            "description": "Real-time anomaly detection platform",
+            "description": "Anomix — Real-time anomaly detection platform",
             "anomaly_detection_method": settings.anomaly_detection_method,
             "min_samples_required": settings.min_samples_for_detection,
         }

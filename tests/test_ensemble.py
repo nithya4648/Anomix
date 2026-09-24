@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
-from app.ml.anomaly_detector import AnomalyDetector
+from app.ml import AnomalyDetector
+
 
 def test_ensemble_detection_voting():
     """Test ensemble voting combining IsolationForest and Z-Score methods."""

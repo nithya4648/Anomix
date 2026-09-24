@@ -4,7 +4,8 @@ import httpx
 from datetime import datetime, timedelta
 import argparse
 import sys
-from scripts.data_simulator import MetricSimulator
+from scripts.data import MetricSimulator
+
 
 API_URL = "https://anomix-backend.onrender.com"
 API_KEY = os.getenv("PULSEWATCH_API_KEY")
