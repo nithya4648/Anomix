@@ -31,6 +31,7 @@ dependencies = [
     "psycopg2-binary",
     "requests",
     "psutil>=5.9.6",
+    "pyjwt>=2.8.0",
 ]
 
 [project.optional-dependencies]
