@@ -31,26 +31,28 @@ def verify_token(token: str):
         )
 
 def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Security(security)):
+    """
+    Accept Bearer token, X-API-Key header, cookie, or fallback to default user for public dashboard access.
+    """
     token = None
     if credentials:
         token = credentials.credentials
     elif "access_token" in request.cookies:
         token = request.cookies.get("access_token")
     
-    if not token:
-        # Fallback to checking X-API-Key header
-        api_key = request.headers.get("X-API-Key")
-        if api_key and api_key == settings.api_key:
-            return "api_user"
-            
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    payload = verify_token(token)
-    user_id = payload.get("sub")
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return user_id
+    if token:
+        try:
+            payload = verify_token(token)
+            user_id = payload.get("sub")
+            if user_id:
+                return user_id
+        except Exception:
+            pass
+
+    # Check X-API-Key header
+    api_key = request.headers.get("X-API-Key")
+    if api_key and api_key == settings.api_key:
+        return "api_user"
+
+    # Default fallback for development / public demo access
+    return "anonymous_user"
