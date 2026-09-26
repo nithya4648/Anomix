@@ -28,6 +28,18 @@ const client: AxiosInstance = axios.create({
   },
 })
 
+// Automatically attach JWT authorization token if available in localStorage
+client.interceptors.request.use((config) => {
+  const token =
+    localStorage.getItem('authToken') ||
+    localStorage.getItem('access_token') ||
+    localStorage.getItem('token')
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 
 export const metricAPI = {
   getRecent: (metric_name: string, limit: number = 100) =>

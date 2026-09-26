@@ -38,9 +38,15 @@ def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials
         token = request.cookies.get("access_token")
     
     if not token:
+        # Fallback to checking X-API-Key header
+        api_key = request.headers.get("X-API-Key")
+        if api_key and api_key == settings.api_key:
+            return "api_user"
+            
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     
     payload = verify_token(token)
