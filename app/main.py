@@ -55,6 +55,29 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    from starlette.middleware.base import BaseHTTPMiddleware
+
+    class PublicEndpointsMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Request, call_next):
+            # Whitelist endpoints for public dashboard access
+            PUBLIC_PATHS = [
+                "/api/v1/anomalies",
+                "/api/v1/incidents",
+                "/api/v1/metrics",
+                "/api/v1/alerts",
+                "/api/analytics",
+                "/api/v1/info",
+                "/config/rules",
+                "/health",
+                "/docs",
+                "/openapi.json",
+            ]
+            if any(request.url.path.startswith(path) for path in PUBLIC_PATHS):
+                return await call_next(request)
+            return await call_next(request)
+
+    app.add_middleware(PublicEndpointsMiddleware)
+
     from slowapi.middleware import SlowAPIMiddleware
     from slowapi.errors import RateLimitExceeded
     from fastapi.responses import JSONResponse
